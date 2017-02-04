@@ -1,3 +1,6 @@
+# Google Maps API key
+google_maps.key
+
 # Databases
 *.db
 
