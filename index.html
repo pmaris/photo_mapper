@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Photo mapper</title>
+        <style>
+          /* Always set the map height explicitly to define the size of the div
+           * element that contains the map. */
+          #map {
+            height: 100%;
+            width: 100%;
+          }
+          /* Optional: Makes the sample page fill the window. */
+          html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+          }
+        </style>
+        <link rel="stylesheet" href="node_modules/fancybox/dist/css/jquery.fancybox.css?v=2.1.6" type="text/css" media="screen" />
+        <link rel="stylesheet" href="node_modules/fancybox/dist/helpers/css/jquery.fancybox-thumbs.css?v=1.0.7" type="text/css" media="screen" />
+        <script src="js/photo_mapper.js"></script>
+    </head>
+    <body>
+        <input type="button" onclick="setMapStartLocation()" value="Save map center">
+        <button id="dbButton" onclick="selectDatabase()">Open database</button>
+        <button id="filterEnable" type="button" onclick=""></button>
+        <!--<form id="filterInput">
+            startDate:
+            <input type="date" name="filterBeginDate">
+            end date:
+            <input type="date" name="filterEndDate">
+        </form>-->
+        <div id="map"></div>
+    </body>
