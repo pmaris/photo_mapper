@@ -3,6 +3,11 @@ google_maps.key
 
 # Databases
 *.db
+*.sqlite
+*.sqlite3
+
+# Configuration
+config.ini
 
 # Logs
 logs
