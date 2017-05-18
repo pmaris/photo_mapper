@@ -10,12 +10,12 @@
     </head>
     <body>
             <div id="buttonBar">
-                <input type="image" src="icons/home.png" class="button" onclick="confirmSaveMapStartLocation()" alt="Save map center" />
-                <input type="image" src="icons/database.png" class="button" onclick="selectDatabase()" alt="Select a database" />
+                <input type="image" src="icons/home.png" class="button" onclick="confirmSaveMapStartLocation()" title="Save the current view of the map as the default when the application starts" />
+                <input type="image" src="icons/database.png" class="button" onclick="selectDatabase()" title="Select a database containing geotagged photos" />
                 <!--
-                <input type="image" src="icons/search.png" class="button" onclick="openFindPhotosModal()" alt="Find geotagged photos" />
-                <input type="image" src="icons/x_pin.png" class="button" onclick="" alt="Find photos that have not been geotagged" />
-                <input type="image" src="icons/calendar.png" class="button" id="filterEnable" onclick="jQuery('#dateFilter').toggle()" alt="Filter photos on map by date" />
+                <input type="image" src="icons/search.png" class="button" onclick="openFindPhotosModal()" title="Search your computer for geotagged photos" />
+                <input type="image" src="icons/x_pin.png" class="button" onclick="" title="Search your computer for photos that have not been geotagged" />
+                <input type="image" src="icons/calendar.png" class="button" id="filterEnable" onclick="jQuery('#dateFilter').toggle()" title="Filter photos shown on the map by the date they were taken" />
                 <span id="dateFilter">
                     Start date:
                     <input type="date" id="filterBeginDate" onchange="filterDatesChanged()" />
