@@ -1,0 +1,30 @@
+#map {
+  height: 100%;
+  width: 100%;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#buttonBar {
+    background-color: #999;
+    border-bottom: 1px solid black;
+    height: 35px;
+}
+
+.button {
+    background-color: #CCC;
+    border-color: #AAA;
+    border-radius: 5px;
+    border-style: outset;
+    border-width: 1px;
+    height: 30px;
+    width: 30px;
+}
+
+#noFolderSelected {
+    color: #F00;
+}
