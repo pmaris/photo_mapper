@@ -9,45 +9,54 @@
         <script src="js/photo_mapper.js"></script>
     </head>
     <body>
-            <div id="buttonBar">
+            <div id="button-bar">
                 <input type="image" src="icons/home.png" class="button" onclick="confirmSaveMapStartLocation()" title="Save the current view of the map as the default when the application starts" />
                 <input type="image" src="icons/database.png" class="button" onclick="selectDatabase()" title="Select a database containing geotagged photos" />
-                <!--
                 <input type="image" src="icons/search.png" class="button" onclick="openFindPhotosModal()" title="Search your computer for geotagged photos" />
-                <input type="image" src="icons/x_pin.png" class="button" onclick="" title="Search your computer for photos that have not been geotagged" />
-                <input type="image" src="icons/calendar.png" class="button" id="filterEnable" onclick="jQuery('#dateFilter').toggle()" title="Filter photos shown on the map by the date they were taken" />
-                <span id="dateFilter">
+                <!--<input type="image" src="icons/x_pin.png" class="button" onclick="" title="Search your computer for photos that have not been geotagged" />-->
+                <input type="image" src="icons/calendar.png" class="button" id="date-filter-enable-button" onclick="jQuery('#date-filter').toggle()" title="Filter photos shown on the map by the date they were taken" />
+                <span id="date-filter">
                     Start date:
-                    <input type="date" id="filterBeginDate" onchange="filterDatesChanged()" />
+                    <input type="date" id="filter-begin-date" onchange="filterDatesChanged()" />
                     End date:
-                    <input type="date" id="filterEndDate" onchange="filterDatesChanged()" />
+                    <input type="date" id="filter-end-date" onchange="filterDatesChanged()" />
                 </span>
-                -->
             </div>
             <div id="map"></div>
 
-        <div id="findPhotosModal" title="Find geotagged photos">
-            <div id="selectOptions">
-                <button id="selectFolderButton" onclick="selectFolder()">Select a folder</button>
-                <div id="folderPath"></div>
+        <div id="find-photos-modal" title="Find geotagged photos" hidden>
+            <div id="select-options">
+                <div id="folder-select">
+                    <button id="select-folder-button" onclick="selectFolder()">Select a folder</button>
+                    <input id="folder-path" type="text" readonly />
+                </div>
                 <p>
                     Select file types to check:
-                    <input id="fileExtensions" type="text" min="1" required="true" value="jpg jpeg" size="5"/>
+                    <input id="file-extensions" type="text" min="1" required="true" value="jpg jpeg" size="5"/>
                     <br />
                     Separate multiple file types with spaces. Periods are not required.
                 </p>
-                <input id="updateCheckbox" type="checkbox" checked>Update locations and times of photos that are already in the database</input>
-                <p id="noFolderSelected">
+                <input id="update-photos-checkbox" type="checkbox" checked>Update locations and times of photos that are already in the database</input>
+                <p id="no-folder-selected" hidden>
                     You must select a folder to search for geotagged photos
                 </p>
             </div>
-            <div id="findProgress">
-                <span id="currentFile"></span>
-            </div>
         </div>
-        <div id="confirmSaveMapModal" title="Save map view">
+        <div id="finder-progress-modal" hidden>
+            <div id="finder-progress-bar">
+                <div id="progress-bar-label">Counting photos...</div>
+            </div>
+            <p id="finder-result" hidden></p>
+            <button id="finderResultCloseButton" hidden>Close/button>
+        </div>
+        <div id="confirm-save-map" title="Save map view" hidden>
             <p>
                 Do you want to make the current map view the default map view when the application starts?
+            </p>
+        </div>
+        <div id="confirm-cancel-finder" title="Cancel search for photos" hidden>
+            <p>
+                Do you want to cancel searching for geotagged photos?
             </p>
         </div>
     </body>

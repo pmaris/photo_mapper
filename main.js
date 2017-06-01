@@ -8,8 +8,8 @@ let win
 
 function createWindow () {
   // Create the browser window.
-  win = new BrowserWindow({width: 1200, height: 800,
-                           icon: './icons/map.png'})
+  win = new BrowserWindow({icon: './icons/map.png'})
+  win.maximize(true);
 
 
   // and load the index.html of the app.

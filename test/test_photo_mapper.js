@@ -1,12 +1,14 @@
 var assert = require('assert');
 var sinon = require('sinon');
-var proxyquire = require('proxyquire').noCallThru();
+var mockRequire = require('mock-require');
 var photoMapper = require('../js/photo_mapper.js');
 
-var jQuery = proxyquire('../js/photo_mapper', {jquery: {}, ui: {}});
+mockRequire('../js/photo_mapper.js', { jquery: function() {},
+                                       'jquery-ui-bundle': function() {},
+                                       electron: function() {}});
 
-var jqueryStub = sinon.stub(photoMapper, 'jQuery');
-var uiStub = sinon.stub(photoMapper, 'ui');
+//var jqueryStub = sinon.stub(photoMapper, 'jQuery');
+//var uiStub = sinon.stub(photoMapper, 'ui');
 
 describe('photo_mapper', function() {
     describe('#dateWithinRange()', function() {

@@ -10,17 +10,21 @@ var GoogleMapsLoader = require('google-maps');
 var geotagFinder = require('./js/geotag_finder.js');
 var databaseTools = require('./js/database_tools.js');
 
+var $ = jQuery;
+
 var defaultIniPath = './config.ini';
 var markers = []
 var markerCluster;
 var map;
 var db;
 var selectedFolder = null;
+var config;
 
 var filterStartTimestamp;
 var filterEndTimestamp;
+var cancelFinder = false;
 
-jQuery(document).ready(function() {
+$(document).ready(function() {
     initialize();
 });
 
@@ -30,16 +34,10 @@ jQuery(document).ready(function() {
  * photos from the database as markers.
  */
 function initialize() {
-    jQuery('.fancybox').fancybox();
-    jQuery.getScript('node_modules/marker-clusterer-plus/src/markerclusterer.js', function() {
-       console.log('Script loaded');
-    });
+    $('.fancybox').fancybox();
+    $.getScript('node_modules/marker-clusterer-plus/src/markerclusterer.js');
 
-    // Hide modal content
-    jQuery('#findPhotosModal').hide();
-    jQuery('#confirmSaveMapModal').hide();
-
-    var config = loadIni(defaultIniPath);
+    config = loadIni(defaultIniPath);
 
     if (databaseTools.tableExists(config.database.path)) {
         console.log('Loading geotagged photos from database');
@@ -76,7 +74,7 @@ function loadIni(iniPath) {
         console.log(loadedConfig);
 
         // Update any missing fields in the configuration object with default values
-        config = jQuery.extend(true, configDefaults, loadedConfig);
+        config = $.extend(true, configDefaults, loadedConfig);
     }
     catch (e) {
         console.error('Could not read configuration from ini file, setting defaults');
@@ -139,7 +137,7 @@ function initializeMap(centerLatitude, centerLongitude, zoom) {
                 }
             };
 
-            jQuery.fancybox.open(clusterMarkers, fancyBoxOptions);
+            $.fancybox.open(clusterMarkers, fancyBoxOptions);
         });
 
         // Update the markers on the map whenever the map is panned, zoomed, or when the map first
@@ -208,7 +206,7 @@ function createMarkersFromPhotos(photos) {
             };
 
             google.maps.event.addListener(marker, 'click', function() {
-                jQuery.fancybox.open(
+                $.fancybox.open(
                       {href: this.photo.path, title: this.photo.title, padding: 5}
                     );
             });
@@ -259,7 +257,7 @@ function selectDatabase() {
 
         photos = databaseTools.getPhotosFromDatabase(config.database.path);
         createMarkersFromPhotos(photos);
-       repaintMarkers(markerCluster, markers, map.getBounds(), filterStartTimestamp, filterEndTimestamp);
+        repaintMarkers(markerCluster, markers, map.getBounds(), filterStartTimestamp, filterEndTimestamp);
     }
 }
 
@@ -273,8 +271,8 @@ function selectFolder() {
     }
     selectedFolder = dialog.showOpenDialog(options)[0];
     console.log('Selected directory: ' + selectedFolder);
-    jQuery('#folderPath').html(selectedFolder);
-    jQuery('#noFolderSelected').hide();
+    $('#folder-path').val(selectedFolder);
+    $('#no-folder-selected').hide();
 }
 
 /*
@@ -282,27 +280,39 @@ function selectFolder() {
  */
 function openFindPhotosModal() {
     selectedFolder = null;
-    jQuery('#noFolderSelected').hide();
+    $('#no-folder-selected').hide();
 
-    var modal = jQuery('#findPhotosModal');
-    modal.dialog({
+    $('#find-photos-modal').dialog({
         autoOpen: true,
         modal: true,
+        dialogClass: 'no-close',
         resizable: false,
         draggable: false,
-        buttons: [{
-            text: 'Start',
-            click: function() {
-                if (selectedFolder) {
-                     startPhotoFinder(selectedFolder,
-                                      jQuery('#fileExtensions')[0].value.split(' '),
-                                      jQuery('#updateCheckbox')[0].checked);
+        closeOnEscape: false,
+        open: function(event, ui) { $(".ui-dialog-titlebar-close").hide(); },
+        buttons: [
+            {
+                text: 'Cancel',
+                'class': 'button-red',
+                click: function() {
+                    $('#find-photos-modal').dialog('destroy');
                 }
-                else {
-                    jQuery('#noFolderSelected').show();
+            },
+            {
+                text: 'Start',
+                'class': 'button-blue',
+                click: function() {
+                    if (selectedFolder) {
+                         startPhotoFinder(selectedFolder,
+                                          $('#file-extensions')[0].value.split(' '),
+                                          $('#update-photos-checkbox')[0].checked);
+                    }
+                    else {
+                        $('#no-folder-selected').show();
+                    }
                 }
             }
-        }]
+        ]
     });
 }
 
@@ -310,20 +320,158 @@ function openFindPhotosModal() {
  * Run the geotagged photo finder.
  */
 function startPhotoFinder(folderPath, fileExtensions, updatePhotos) {
-    var geotaggedPhotos = geotagFinder.getGeotaggedPhotos(folderPath, fileExtensions);
-    databaseTools.addGeotaggedPhotosToDatabase('D:/Programing/photo_mapper/geotags.db', geotaggedPhotos, updatePhotos);
+
+    $('#find-photos-modal').dialog('destroy');
+    var modal = $('#finder-progress-modal');
+    modal.dialog({
+        autoOpen: true,
+        modal: true,
+        resizable: false,
+        draggable: false,
+        title: 'Searching for geotagged photos',
+        closeOnEscape: false,
+        open: function(event, ui) { $(".ui-dialog-titlebar-close").hide(); },
+        buttons: [
+            {
+                text: 'Cancel',
+                'class': 'button-red',
+                id: 'cancel-finder-button',
+                click: function() {
+                    confirmCancelFinder();
+                }
+            },
+            {
+                text: 'Close',
+                'class': 'button-blue',
+                id: 'close-finder-modal-button',
+                click: function() {
+                    modal.dialog('destroy');
+                }
+            }
+        ]
+    });
+
+    initFinderUi();
+
+    cancelFinder = false;
+
+    geotagFinder.getPhotosMatchingFilters(folderPath, fileExtensions, function(photos) {
+        setProgressBarMax(photos.length);
+        getPhotoGeotags(photos, setProgressBarValue, function(geotaggedPhotos) {
+            $('#progress-bar-label').text('Adding photos to database');
+            console.log('DONE');
+            var result = databaseTools.addGeotaggedPhotosToDatabase(config.database.path, geotaggedPhotos, updatePhotos);
+            repaintMarkers(markerCluster, markers, map.getBounds(), filterStartTimestamp, filterEndTimestamp);
+
+            $('#finder-result').show();
+            var resultString = 'Number of photos added: ' + result.numAdded;
+            if (updatePhotos) {
+                resultString += '<br>Number of photos updated: ' + result.numUpdated;
+            }
+            $('#finder-result').html(resultString);
+            $('#progress-bar-label').text('Finished');
+
+            $('#close-finder-modal-button').show();
+            $('#cancel-finder-button').hide();
+            console.log($('#close-finder-modal-button'));
+        });
+    });
+}
+
+/*
+ * Asynchronously get the details of geotagged photos, and pass the result to a callback function.
+ * @param {string[]} photoPaths Absolute paths of photos to get the geotags of.
+ * @param {function} progressCallback Callback to be called with each iteration over the array of
+ *                                    photo paths. This function will be called with the number of
+ *                                    photos that have been checked so far (The current index in the
+ *                                    array being checked plus one).
+ * @param {function} finalCallback Callback to be called once the geotags for all photos have
+ *                                 retrieved. This function will be called with an array of objects
+ *                                 containing the details of the geotagged photos, with the
+ *                                 following keys:
+ *                                     filePath: Absolute path of the photo.
+ *                                     latitude: Latitude of the location where the photo was taken.
+ *                                     longitude: Longitude of the location where the photo was
+ *                                         taken.
+ *                                     createTime: Unix timestamp of when the photo was taken.
+ */
+function getPhotoGeotags(photoPaths, progressCountCallback, finalCallback) {
+    var chunk = 100;
+    var index = 0;
+    var geotaggedPhotos = [];
+
+    function work() {
+        var cnt = chunk;
+        while (cnt-- && index < photoPaths.length && !cancelFinder) {
+            if (progressCountCallback) {
+                progressCountCallback(index + 1);
+            }
+
+            var exif = geotagFinder.getImageExif(photoPaths[index]);
+
+            if (exif.tags.GPSLatitude && exif.tags.GPSLongitude) {
+                geotaggedPhotos.push({
+                    filePath: photoPaths[index],
+                    latitude: exif.tags.GPSLatitude,
+                    longitude: exif.tags.GPSLongitude,
+                    createTime: 'DateTimeOriginal' in exif.tags ? exif.tags.DateTimeOriginal : 0
+                })
+            }
+
+            ++index;
+        }
+        if (index < photoPaths.length) {
+            setTimeout(work, 1);
+        }
+        if (index >= photoPaths.length) {
+            finalCallback(geotaggedPhotos);
+        }
+    }
+    work();
+}
+
+function initFinderUi() {
+    $('#progress-bar-label').text('Counting photos');
+    $('#finder-progress-bar').progressbar({
+        value: false
+    });
+    $('#finder-result').hide();
+    $('#finder-result').text('');
+    $('#close-finder-modal-button').hide()
+}
+
+/*
+ * Setter for the max value for the progress bar shown in the UI when adding geotagged photos to the
+ * application database and for finding photos without geotags.
+ * @param {number} maxValue The maximum value to set for the progress bar.
+ */
+function setProgressBarMax(maxValue) {
+    $('#finder-progress-bar').progressbar('option', 'max', maxValue);
+    $('#finder-progress-bar').progressbar('option', 'value', 0);
+}
+
+/*
+ * Setter for the current value for the progress bar shown in the UI when adding geotagged photos to
+ * the application database and for finding photos without geotags.
+ * @param {number} value The value to set for the progress bar.
+ */
+function setProgressBarValue(value) {
+    $('#finder-progress-bar').progressbar('option', 'value', value);
+    $('#progress-bar-label').text(value + ' / ' + $('#finder-progress-bar').progressbar('option', 'max') + ' photos checked');
 }
 
 /*
  * Open the modal for confirming saving the starting view of the map.
  */
 function confirmSaveMapStartLocation() {
-    var modal = jQuery('#confirmSaveMapModal');
+    var modal = $('#confirm-save-map');
     modal.dialog({
         autoOpen: true,
         modal: true,
         resizable: false,
         draggable: false,
+        closeOnEscape: false,
+        open: function(event, ui) { $(".ui-dialog-titlebar-close").hide(); },
         buttons: [
             {
                 text: 'OK',
@@ -342,15 +490,45 @@ function confirmSaveMapStartLocation() {
     });
 }
 
+function confirmCancelFinder() {
+    var modal = $('#confirm-cancel-finder');
+    modal.dialog({
+        autoOpen: true,
+        modal: true,
+        resizable: false,
+        draggable: false,
+        closeOnEscape: false,
+        open: function(event, ui) { $(".ui-dialog-titlebar-close").hide(); },
+        buttons: [
+            {
+                text: 'Cancel search',
+                'class': 'button-red',
+                click: function() {
+                    cancelFinder = true;
+                    modal.dialog('close');
+                    $('#finder-progress-modal').dialog('destroy');
+                }
+            },
+            {
+                text: 'Continue search',
+                'class': 'button-blue',
+                click: function() {
+                    modal.dialog('close');
+                }
+            }
+        ],
+    });
+}
+
 /*
  * Handler for when the dates to filter photos by have changed.
  */
 function filterDatesChanged() {
-    var filtersVisible = jQuery('#dateFilter').is(':visible');
+    var filtersVisible = $('#date-filter').is(':visible');
 
     if (filtersVisible) {
-        var startDate = jQuery('#filterBeginDate')[0].value;
-        var endDate = jQuery('#filterEndDate')[0].value;
+        var startDate = $('#filter-begin-date')[0].value;
+        var endDate = $('#filter-end-date')[0].value;
 
         if (startDate) {
             var d = new Date(startDate);

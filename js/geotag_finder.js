@@ -4,103 +4,40 @@ var recursive = require('recursive-readdir');
 var exifParser = require('exif-parser');
 
 module.exports = {
-    getGeotaggedPhotos: getGeotaggedPhotos,
+    getImageExif: getImageExif,
     getNonGeotaggedPhotos: getNonGeotaggedPhotos,
+    getPhotosMatchingFilters: getPhotosMatchingFilters,
     getSanitizedExtensions: getSanitizedExtensions,
     ignoreFile: ignoreFile
 }
 
 /**
- * Recursively searches through a directory tree to find photos that have been geotagged.
- * Specifically, images must contain valid GPSLatitude and GPSLongitude tags in their EXIF metadata
- * to be considered to have been geotagged.
- * @param {string} baseDirectory Absolute path of the base of a directory tree containing photos.
- * @param {string[]} fileExtensions Case-insensitive array of file type extensions to check. Periods
- *                                  are optional.
- * @return {object[]} Details of all photos from within the directory tree that are geotagged, with
- *                    each object containing the following keys:
- *                        filePath: Absolute path of the image file.
- *                        latitude: The latitude of the location where the photo was taken.
- *                        longitude: The longitude of the location where the photo was taken.
- *                        createTime: Unix timestamp representing the time the photo was taken, or 0
- *                            if the photo does not contain the DateTimeOriginal tag.
- */
-function getGeotaggedPhotos(baseDirectory, fileExtensions) {
-    var geotaggedPhotos = [];
-    var sanitizedExtensions = getSanitizedExtensions(fileExtensions);
-
-    console.log('Searching for geotagged photos in %s', baseDirectory);
-    recursive(baseDirectory, [function(file, stats) {
-        return ignoreFile(file, stats, sanitizedExtensions);
-    }], function (err, files) {
-        if (err) {
-            log.error('An error ocurred reading when the directory: ' + err);
-            return;
-        }
-
-        var exif;
-        for (i = 0; i < files.length; i++) {
-            console.log('Checking whether file %s is geotagged', files[i]);
-            try {
-                exif = getImageExif(files[i]);
-            }
-            catch (err) {
-                console.warn('Could not read EXIF metadata due to error %s', err);
-                continue;
-            }
-
-            if (exif.tags.GPSLatitude && exif.tags.GPSLongitude) {
-                geotaggedPhotos.push({
-                    'filePath': files[i],
-                    'latitude': exif.tags.GPSLatitude,
-                    'longitude': exif.tags.GPSLatitude,
-                    'createTime': 'DateTimeOriginal' in exif.tags ? exif.tags.DateTimeOriginal : 0
-                });
-            }
-        }
-    });
-
-    return geotaggedPhotos;
-}
-
-/**
- * Recursively searches through a directory tree to find photos that are not geotagged.
- * Specifically, images without valid GPSLatitude and GPSLongitude tags are considered to not be
- * geotagged. This includes images that contain no EXIF metadata at all, or where the EXIF could not
- * be read.
- * @param {string} baseDirectory Absolute path of the base of a directory tree containing photos.
- * @param {string[]} fileExtensions Case-insensitive array of file type extensions to check. Periods
- *                                  are optional.
+ * Get the paths of photos in a given array of file paths that are not geotagged. Specfically,
+ * photos without valid GPSLatitude and GPSLongitude tags in their EXIF metadata are considered to
+ * not be geotagged. This includes images that contain no EXIF metadata at all, or where the EXIF
+ * could not be read.
+ * @param (string[]) photoPaths Absolute paths of photos to search through for geotagged photos.
+ * @param (function) counterHandler
  * @return {string[]} Absolute paths of all photos from within the directory tree that do not have a
  *                    location in their EXIF metadata.
  */
-function getNonGeotaggedPhotos(baseDirectory, fileExtensions) {
+function getNonGeotaggedPhotos(photoPaths, counterHandler) {
     var nonGeotaggedPhotos = [];
-    var sanitizedExtensions = getSanitizedExtensions(fileExtensions);
+    var exif;
 
-    recursive(baseDirectory, [function(file, stats) {
-        return ignoreFile(file, stats, sanitizedExtensions);
-    }], function (err, files) {
-        if (err) {
-            log.error('An error ocurred reading when the directory: ' + err);
-            return;
-        }
-
-        var exif;
-        for (i = 0; i < files.length; i++) {
-            console.log('Checking whether file %s is geotagged', files[i]);
-            try {
-                exif = getImageExif(files[i]);
-                if (!exif.tags.GPSLatitude || !exif.tags.GPSLongitude) {
-                    notGeotaggedPhotos.push(files[i]);
-                }
-            }
-            catch (err) {
-                console.warn('Could not read EXIF metadata for due to error', err);
-                notGeotaggedPhotos.push(files[i]);
+    for (i = 0; i < photoPaths.length; i++) {
+        console.log('Checking whether file %s is geotagged', photoPaths[i]);
+        try {
+            exif = getImageExif(photoPaths[i]);
+            if (!exif.tags.GPSLatitude || !exif.tags.GPSLongitude) {
+                notGeotaggedPhotos.push(photoPaths[i]);
             }
         }
-    });
+        catch (err) {
+            console.warn('Could not read EXIF metadata for due to error', err);
+            notGeotaggedPhotos.push(photoPaths[i]);
+        }
+    }
     return nonGeotaggedPhotos;
 }
 
@@ -118,6 +55,20 @@ function getImageExif(imagePath) {
     fs.readSync(fd, buffer, 0, buffer.length, 0);
     fs.closeSync(fd);
     return exifParser.create(buffer).parse();
+}
+
+function getPhotosMatchingFilters(baseDirectory, fileExtensions, callback) {
+    var sanitizedExtensions = getSanitizedExtensions(fileExtensions);
+    recursive(baseDirectory, [function(file, stats) {
+        return ignoreFile(file, stats, sanitizedExtensions);
+    }], function (err, files) {
+        if (err) {
+            log.error('An error ocurred reading when the directory: ' + err);
+            return;
+        }
+        callback(files);
+    });
+
 }
 
 /**

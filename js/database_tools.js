@@ -23,11 +23,17 @@ module.exports = {
  * @param {boolean} updateExistingPhotos If true, the location and create time of photos that are
  *                                       already in the database (As determined by the file_path)
  *                                       will be updated.
+ * @return {object} counts of the numbers of photos that were added and updated in the database:
+ *                      numAdded: Count of the number of photos that were added to the database.
+ *                      numUpdate: Count of the number of existing photos in the database that were
+ *                          updated. Note that photos are counted as updated even if their values in
+ *                          the database did not change.
  */
 function addGeotaggedPhotosToDatabase(databasePath, geotaggedPhotos, updateExistingPhotos) {
-    var db = new sql.Database();
+    var db = new SQL.Database(fs.readFileSync(databasePath));
 
     var selectStatement = db.prepare('SELECT * FROM geotags WHERE file_path=:file_path');
+
     var insertSql = 'INSERT INTO geotags (file_path, latitude, longitude, create_time) ';
     insertSql += 'VALUES (:file_path, :latitude, :longitude, :create_time);';
     var insertStatement = db.prepare(insertSql);
@@ -37,25 +43,47 @@ function addGeotaggedPhotosToDatabase(databasePath, geotaggedPhotos, updateExist
     var updateStatement = db.prepare(updateSql);
 
     var photoExistsInDb;
+    var currentPhoto;
+    var photoObject;
+    var numAdded = 0;
+    var numUpdated = 0;
 
     for (i = 0; i < geotaggedPhotos.length; i++) {
-        // Check if photo is already in the database
-        console.log(selectStatement.getAsObject());
-        //photoExistsInDb = 
+        currentPhoto = geotaggedPhotos[i];
 
-        //if (!selectStatement.getAsObject()) {
-        //    console.log('Adding geotags for file ' + geotaggedPhotos[i].filePath + ' to database');
-        //    insertStatement.run({':file_path': geotaggedPhotos[i].filePath,
-        //                        ':latitude': geotaggedPhotos[i].latitude,
-        //                        ':longitude': geotaggedPhotos[i].longitude,
-        //                        ':create_time': geotaggedPhotos[i].createTime});
-        //}
-        //else
-        //{
-        //    console.log()
-        //}
+        // Check if photo is already in the database by querying for file path, and checking if the
+        // result is a non-empty object
+        selectStatement.step();
+        photoObject = selectStatement.getAsObject({':file_path': currentPhoto.filePath});
+        photoExistsInDb = Object.keys(photoObject).length > 0;
+
+        if (!photoExistsInDb) {
+            console.log('Adding geotags for file ' + currentPhoto.filePath + ' to database');
+            insertStatement.run({':file_path': currentPhoto.filePath,
+                                 ':latitude': currentPhoto.latitude,
+                                 ':longitude': currentPhoto.longitude,
+                                 ':create_time': currentPhoto.createTime});
+            numAdded++;
+        }
+        else if (photoExistsInDb && updateExistingPhotos) {
+            console.log('Updating existing photo in database');
+
+            updateStatement.run({':file_path': currentPhoto.filePath,
+                                 ':latitude': currentPhoto.latitude,
+                                 ':longitude': currentPhoto.longitude,
+                                 ':create_time': currentPhoto.createTime});
+            numUpdated++;
+        }
+        else
+        {
+            console.log('Photo already exists in database, will not update');
+        }
     }
-    //fs.writeFile(databasePath, new Buffer(db.export()));
+
+    fs.writeFile(databasePath, new Buffer(db.export()));
+
+    return {numAdded: numAdded,
+            numUpdated: numUpdated};
 }
 
 /**
@@ -90,7 +118,7 @@ function getPhotosFromDatabase(databasePath) {
     var fileBuffer = fs.readFileSync(databasePath);
     var db = new SQL.Database(fileBuffer);
 
-    var query = 'SELECT latitude, longitude, file_path, create_time FROM geotags';
+    var query = 'SELECT latitude, longitude, file_path, create_time FROM geotags ORDER BY create_time DESC';
     var rows = db.exec(query);
     console.log('Reading ' + rows[0].values.length + ' geotagged photos from the database');
 
