@@ -4,11 +4,45 @@ var recursive = require('recursive-readdir');
 var exifParser = require('exif-parser');
 
 module.exports = {
-    getImageExif: getImageExif,
+    getGeotaggedPhotos: getGeotaggedPhotos,
     getNonGeotaggedPhotos: getNonGeotaggedPhotos,
     getPhotosMatchingFilters: getPhotosMatchingFilters,
     getSanitizedExtensions: getSanitizedExtensions,
-    ignoreFile: ignoreFile
+    ignoreFile: ignoreFile,
+    getImageExif: getImageExif
+}
+
+/**
+ * Get the details of photos in a given array of file paths that are geotagged. Specifically, photos
+ * that contain valid GPSLatitude and GPSLongitude tags in their EXIF metadata are considered to be
+ * geotagged.
+ * @param (string[]) photoPaths Absolute paths of photos to search through for geotagged photos.
+ * @return {object[]} Details of all photos from within the directory tree that are geotagged, with
+ *                    each object containing the following keys:
+ *                        filePath: Absolute path of the image file.
+ *                        latitude: The latitude of the location where the photo was taken.
+ *                        longitude: The longitude of the location where the photo was taken.
+ *                        createTime: Unix timestamp representing the time the photo was taken, or 0
+ *                            if the photo does not contain the DateTimeOriginal tag.
+ */
+function getGeotaggedPhotos(photoPaths) {
+        try {
+            exif = getImageExif(photoPaths[i]);
+        }
+        catch (err) {
+            return null;
+        }
+
+        if (exif.tags.GPSLatitude && exif.tags.GPSLongitude) {
+            metadata = {
+                'filePath': photoPaths[i],
+                'latitude': exif.tags.GPSLatitude,
+                'longitude': exif.tags.GPSLongitude,
+                'createTime': 'DateTimeOriginal' in exif.tags ? exif.tags.DateTimeOriginal : 0
+            }
+        }
+
+    return metadata;
 }
 
 /**
