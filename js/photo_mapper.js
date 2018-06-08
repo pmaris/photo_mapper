@@ -407,9 +407,14 @@ function getPhotoGeotags(photoPaths, progressCountCallback, finalCallback) {
                 progressCountCallback(index + 1);
             }
 
-            var exif = geotagFinder.getImageExif(photoPaths[index]);
+            try {
+                var exif = geotagFinder.getImageExif(photoPaths[index]);
+            }
+            catch (err) {
+                console.error('Error occurred while reading EXIF for photo ' + photoPaths[index] + ' ' + err);
+            }
 
-            if (exif.tags.GPSLatitude && exif.tags.GPSLongitude) {
+            if (exif && exif.tags.GPSLatitude && exif.tags.GPSLongitude) {
                 geotaggedPhotos.push({
                     filePath: photoPaths[index],
                     latitude: exif.tags.GPSLatitude,

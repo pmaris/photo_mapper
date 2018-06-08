@@ -97,7 +97,7 @@ function getPhotosMatchingFilters(baseDirectory, fileExtensions, callback) {
         return ignoreFile(file, stats, sanitizedExtensions);
     }], function (err, files) {
         if (err) {
-            log.error('An error ocurred reading when the directory: ' + err);
+            console.error('An error ocurred reading when the directory: ' + err);
             return;
         }
         callback(files);

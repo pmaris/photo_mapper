@@ -120,6 +120,11 @@ function getPhotosFromDatabase(databasePath) {
 
     var query = 'SELECT latitude, longitude, file_path, create_time FROM geotags ORDER BY create_time DESC';
     var rows = db.exec(query);
+
+    if (!rows.length) {
+        return photos;
+    }
+
     console.log('Reading ' + rows[0].values.length + ' geotagged photos from the database');
 
     var latitudeIndex = rows[0].columns.indexOf('latitude');
