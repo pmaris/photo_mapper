@@ -1,6 +1,6 @@
 var fs = require('fs');
 var path = require('path');
-var jQuery = require('jquery');
+global.jQuery = require('jquery');
 var ui = require('jquery-ui-bundle');
 var ini = require('ini');
 const dialog = require('electron').remote.dialog;
@@ -8,12 +8,12 @@ require('./node_modules/fancybox/dist/js/jquery.fancybox.pack.js');
 require('./node_modules/fancybox/dist/helpers/js/jquery.fancybox-thumbs.js');
 var GoogleMapsLoader = require('google-maps');
 var geotagFinder = require('./js/geotag_finder.js');
-var databaseTools = require('./js/database_tools.js');
+var model = require('./js/model.js');
 
-var $ = jQuery;
+global.$ = jQuery;
 
 var defaultIniPath = './config.ini';
-var markers = []
+var markers = [];
 var markerCluster;
 var map;
 var db;
@@ -39,13 +39,12 @@ function initialize() {
 
     config = loadIni(defaultIniPath);
 
-    if (databaseTools.tableExists(config.database.path)) {
+    if (database.tableExists(config.database.path)) {
         console.log('Loading geotagged photos from database');
-        photos = databaseTools.getPhotosFromDatabase(config.database.path);
-        createMarkersFromPhotos(photos);
-    }
-    else {
-        databaseTools.createTable('db/schema.sql', config.database.path);
+
+        model.Photo.findAll().then(photos => {
+            createMarkersFromPhotos(photos);
+        });
     }
 
     initializeMap(config.map.centerLatitude, config.map.centerLongitude, config.map.zoom);
@@ -200,9 +199,9 @@ function createMarkersFromPhotos(photos) {
 
             // Store attributes of photo with the marker, for loading the photo
             marker.photo = {
-              path: photos[i].filePath,
-              title: path.basename(photos[i].filePath),
-              createTime: photos[i].createTime
+              path: photos[i].path,
+              title: path.basename(photos[i].path),
+              createTime: photos[i].create_time
             };
 
             google.maps.event.addListener(marker, 'click', function() {
@@ -255,8 +254,9 @@ function selectDatabase() {
         config.database.path = files[0];
         saveIni();
 
-        photos = databaseTools.getPhotosFromDatabase(config.database.path);
-        createMarkersFromPhotos(photos);
+        model.Photo.findAll().then(photos => {
+            createMarkersFromPhotos(photos);
+        });
         repaintMarkers(markerCluster, markers, map.getBounds(), filterStartTimestamp, filterEndTimestamp);
     }
 }
@@ -360,13 +360,13 @@ function startPhotoFinder(folderPath, fileExtensions, updatePhotos) {
         getPhotoGeotags(photos, setProgressBarValue, function(geotaggedPhotos) {
             $('#progress-bar-label').text('Adding photos to database');
             console.log('DONE');
-            var result = databaseTools.addGeotaggedPhotosToDatabase(config.database.path, geotaggedPhotos, updatePhotos);
+            model.Photo.bulkCreate(geotaggedPhotos, {updateOnDuplicate: ['latitude', 'longitude']});
             repaintMarkers(markerCluster, markers, map.getBounds(), filterStartTimestamp, filterEndTimestamp);
 
             $('#finder-result').show();
-            var resultString = 'Number of photos added: ' + result.numAdded;
+            var resultString = 'Number of photos added: ' + geotaggedPhotos.length;
             if (updatePhotos) {
-                resultString += '<br>Number of photos updated: ' + result.numUpdated;
+                resultString += '<br>Number of photos updated: ' + updatePhotos.length;
             }
             $('#finder-result').html(resultString);
             $('#progress-bar-label').text('Finished');
@@ -416,10 +416,10 @@ function getPhotoGeotags(photoPaths, progressCountCallback, finalCallback) {
 
             if (exif && exif.tags.GPSLatitude && exif.tags.GPSLongitude) {
                 geotaggedPhotos.push({
-                    filePath: photoPaths[index],
+                    path: photoPaths[index],
                     latitude: exif.tags.GPSLatitude,
                     longitude: exif.tags.GPSLongitude,
-                    createTime: 'DateTimeOriginal' in exif.tags ? exif.tags.DateTimeOriginal : 0
+                    create_time: 'DateTimeOriginal' in exif.tags ? exif.tags.DateTimeOriginal : 0
                 })
             }
 

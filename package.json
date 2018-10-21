@@ -12,6 +12,13 @@
     "jquery-ui-bundle": "1.12.1",
     "marker-clusterer-plus": "^2.1.4",
     "recursive-readdir": "^2.1.0",
+    "sequelize": "^4.40.0",
     "sql.js": "github:kripken/sql.js"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0"
+  },
+  "scripts": {
+    "test": "mocha"
   }
 }
