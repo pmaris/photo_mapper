@@ -29,6 +29,59 @@ describe('geotag_finder', function () {
     });
   });
 
+  describe('#getPhotoGeotags()', function () {
+    it('should return the location details of geotagged photos', function () {
+      var photos = [
+        path.resolve(__dirname, 'data', 'photos', 'a', 'c', 'c.jpg'),
+        path.resolve(__dirname, 'data', 'photos', 'b', 'b.jpg')
+      ];
+      var expectedResponse = [
+        {
+          createTime: 1503423638,
+          latitude: 46.585755679985255,
+          longitude: -112.01842411999628,
+          filePath: path.resolve(__dirname, 'data', 'photos', 'a', 'c', 'c.jpg')
+        },
+        {
+          createTime: 1503247734,
+          latitude: 43.6177317599992,
+          longitude: -116.19964063006155,
+          filePath: path.resolve(__dirname, 'data', 'photos', 'b', 'b.jpg')
+        }
+      ]
+
+      geotagFinder.getPhotoGeotags(photos, function () {}, 100, function (photos) {
+        assert.deepStrictEqual(photos.sort(), expectedResponse.sort());
+      });
+    });
+
+    it('should not include non-geotagged photos in the returned array', function () {
+      geotagFinder.getPhotoGeotags([path.resolve(__dirname, 'data', 'image_without_geotags.jpg')], function () {}, 100, function (photos) {
+        assert.deepStrictEqual(photos, []);
+      });
+    });
+
+    it('should not include photos with EXIF data that cannot be read in the returned array', function () {
+      geotagFinder.getPhotoGeotags([path.resolve(__dirname, 'data', 'image_without_exif.jpg')], function () {}, 100, function (photos) {
+        assert.deepStrictEqual(photos, []);
+      });
+    });
+
+    it('should update the progress callback function with the number of photos that have been read', function () {
+      var progressCallback = sinon.fake();
+      var photos = [
+        path.resolve(__dirname, 'data', 'image_with_exif.jpg'),
+        path.resolve(__dirname, 'data', 'image_without_exif.jpg'),
+        path.resolve(__dirname, 'data', 'image_without_geotags.jpg')
+      ];
+
+      geotagFinder.getPhotoGeotags(photos, progressCallback, 1, function (photos) {
+        assert.strictEqual(progressCallback.callCount, 3);
+        assert.deepStrictEqual(progressCallback.args, [[1], [2], [3]]);
+      });
+    });
+  });
+
   describe('#getPhotoPaths()', function () {
     it('should return the paths to all photos in the directory that have the specified extensions', function (done) {
       const photosDir = path.resolve(__dirname, 'data', 'photos');

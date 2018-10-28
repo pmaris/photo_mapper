@@ -4,6 +4,7 @@ var recursive = require('recursive-readdir');
 var exifParser = require('exif-parser');
 
 module.exports = {
+  getPhotoGeotags: getPhotoGeotags,
   getPhotoPaths: getPhotoPaths,
   getSanitizedExtensions: getSanitizedExtensions,
   getPhotoExif: getPhotoExif,
@@ -31,6 +32,70 @@ function getPhotoExif (photoPath) {
     console.error('Could not open file due to error', err);
     return null;
   }
+}
+
+/**
+ * Get the locations of geotagged photos from a given array of absolute paths of
+ * photos, while passing the progress to a callback function.
+ * @param {string[]} photoPaths Absolute paths of photos to get the geotags of.
+ * @param {function} progressCallback Callback to be called with each iteration
+ *                                    over the array of photo paths. This
+ *                                    function will be called with the number of
+ *                                    photos that have been checked so far.
+ * @param {number} chunkSize Number of photos to read in each iteration over the
+ *                           array of photo paths, between calls to the
+ *                           progressCallback function.
+ * @param {functional} callback Callback to be called after the geotags have
+ *                              been read. This function will be called with a
+ *                              single argument, an array of objects containing
+ *                              the details of the locations of the provided
+ *                              photos. Each object has the following keys and
+ *                              values:
+ *                                path: Absolute path of the photo.
+ *                                latitude: The latitude of the location where
+ *                                  the photo was taken.
+ *                                longitude: The longitude of the location where
+ *                                  the photo was taken.
+ *                                create_time: Unix epoch timestamp of when the
+ *                                  photo was taken.
+ */
+function getPhotoGeotags (photoPaths, progressCallback, chunkSize, callback) {
+  var index = 0;
+  var geotaggedPhotos = [];
+
+  function work () {
+    var cnt = chunkSize;
+    // TODO: Reimplement a way to cancel the finder
+    while (cnt-- && index < photoPaths.length) {
+      if (progressCallback) {
+        progressCallback(index + 1);
+      }
+
+      try {
+        var exif = getPhotoExif(photoPaths[index]);
+      } catch (err) {
+        console.error('Error occurred while reading EXIF for photo ' + photoPaths[index] + ' ' + err);
+      }
+
+      if (exif && exif.tags.GPSLatitude && exif.tags.GPSLongitude) {
+        geotaggedPhotos.push({
+          filePath: photoPaths[index],
+          latitude: exif.tags.GPSLatitude,
+          longitude: exif.tags.GPSLongitude,
+          createTime: 'DateTimeOriginal' in exif.tags ? exif.tags.DateTimeOriginal : 0
+        })
+      }
+
+      ++index;
+    }
+    if (index < photoPaths.length) {
+      setTimeout(work, 1);
+    }
+    if (index >= photoPaths.length) {
+      callback(geotaggedPhotos);
+    }
+  }
+  work();
 }
 
 /**
