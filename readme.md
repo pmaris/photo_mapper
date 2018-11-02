@@ -10,10 +10,11 @@ Features
 
 Getting started
 ===============
-1. Install `npm`
-2. Install dependencies using using the command `npm install <repository_location>`
-3. Run the application using the command `/<repository_location>/node_modules/.bin/electron <repository_location>`
-4. Searh for geotagged photos using the search icon in the top left corner of the window
+1. Install `nodejs` version `10.0` or higher
+2. Install `npm`
+3. Install dependencies using using the command `npm install <repository_location>`
+4. Run the application using the command `/<repository_location>/node_modules/.bin/electron <repository_location>`
+5. Searh for geotagged photos using the search icon in the top left corner of the window
 
 Currently, the map works without a Google Maps API key. If this ever changes in the future, you will have to sign up for a Google Maps API key and then create the file `google_maps.key` in the repository's root directory, and then add your key to the file.
 

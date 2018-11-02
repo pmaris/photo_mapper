@@ -16,8 +16,9 @@ const markerClusterOptions = {
 
 module.exports = {
   createMarkersFromPhotos: createMarkersFromPhotos,
-  initializeMap: initializeMap,
-  repaintMarkers: repaintMarkers
+  initializeGoogleMapsLoader: initializeGoogleMapsLoader,
+  repaintMarkers: repaintMarkers,
+  setupMap: setupMap
 };
 
 /**
@@ -84,42 +85,29 @@ function createMarkersFromPhotos (photos) {
 };
 
 /**
- * Initialize the Google Map object.
- * @param {google.maps.Marker[]} markers Google Map markers for all photos to
- *                                       display on the map.
- * @param {number} centerLatitude Latitude of the initial center position of the
- *                                map.
- * @param {number} centerLongitude Longitude of the initial center position of
- *                                 the map.
- * @param {number} zoom Initial zoom level of the map.
+ * Initialize the GoogleMapsLoader by setting the Google Maps API key and then
+ * calling the GoogleMapLoader's load function, and sets the global google
+ * variable after the GoogleMapsLoader has loaded.
+ sets the global google value with
+ * @return {Promise} Resolves once the GoogleMapsLoader has loaded, and the
+ *                   global google variable has been set. Rejects if the
+ *                   Google Maps key file cannot be read.
  */
-function initializeMap (markers, centerLatitude, centerLongitude, zoom) {
-  fs.readFile('./google_maps.key', function (err, data) {
-    if (err) {
-      console.log('An error ocurred reading the file :' + err.message);
-      return null;
-    } else {
-      GoogleMapsLoader.KEY = String(data);
-    }
-  });
-
-  GoogleMapsLoader.load(function (gmap) {
-    google = gmap;
-    googleMap = new google.maps.Map(document.getElementById('map'), {
-      center: { lat: centerLatitude, lng: centerLongitude },
-      zoom: zoom
+function initializeGoogleMapsLoader () {
+  var promise = new Promise(function (resolve, reject) {
+    fs.readFile('./google_maps.key', function (err, data) {
+      if (err) {
+        reject(new Error('An error ocurred when reading the google maps API key file: ' + err.message));
+      } else {
+        GoogleMapsLoader.KEY = String(data);
+      }
     });
-
-    console.log('Num markers: %s', markers.length);
-    var markerCluster = new MarkerClusterer(googleMap, markers, markerClusterOptions);
-    google.maps.event.addListener(markerCluster, 'clusterclick', clusterClick);
-
-    // Update the markers on the map whenever the map is panned, zoomed, or when
-    // the map first loads
-    googleMap.addListener('tilesloaded', function () {
-      repaintMarkers(markerCluster, markers, googleMap.getBounds(), ui.getDateFilterStart(), ui.getDateFilterEnd());
+    GoogleMapsLoader.load(function (googleObj) {
+      google = googleObj;
+      resolve();
     });
   });
+  return promise;
 }
 
 /**
@@ -128,8 +116,12 @@ function initializeMap (markers, centerLatitude, centerLongitude, zoom) {
  * @param {object} cluster MarkerCluster object.
  * @param {object[]} mapMarkers Array of Google Maps Marker objects.
  * @param {object} mapBounds Google Maps LatLngBounds object.
- * @param {number} startDate Unix timestamp representing the start of the date range.
- * @param {number} endDate Unix timestamp representing the start of the date range.
+ * @param {number} startDate Unix timestamp representing the start of the date
+ *                           range, or null if no start date filter should be
+ *                           applied.
+ * @param {number} endDate Unix timestamp representing the start of the date
+ *                         range, or null if no end date filter should be
+ *                         applied.
  */
 function repaintMarkers (cluster, mapMarkers, mapBounds, startDate, endDate) {
   console.log('Repainting markers');
@@ -154,4 +146,41 @@ function repaintMarkers (cluster, mapMarkers, mapBounds, startDate, endDate) {
   }
 
   cluster.repaint();
+}
+
+/**
+ * Initialize the Google Map object, and add a MarkerClusterer to the map for
+ * the provided markers, and paint the markers on the map.
+ * @param {google.maps.Marker[]} markers Google Map markers for all photos to
+ *                                       display on the map.
+ * @param {number} centerLatitude Latitude of the initial center position of the
+ *                                map.
+ * @param {number} centerLongitude Longitude of the initial center position of
+ *                                 the map.
+ * @param {number} zoom Initial zoom level of the map.
+ * @return {Promise} Resolves once the map has been setup. Rejects if
+ *                   GoogleMapsLoader has not been initialized.
+ */
+function setupMap (markers, centerLatitude, centerLongitude, zoom) {
+  var promise = new Promise(function (resolve, reject) {
+    if (!google) {
+      reject(new Error('Google Maps Loader not initialized'));
+    }
+    googleMap = new google.maps.Map(ui.getMapElement(), {
+      center: { lat: centerLatitude, lng: centerLongitude },
+      zoom: zoom
+    });
+
+    console.log('Num markers: %s', markers.length);
+    var markerCluster = new MarkerClusterer(googleMap, markers, markerClusterOptions);
+    google.maps.event.addListener(markerCluster, 'clusterclick', clusterClick);
+
+    // Update the markers on the map whenever the map is panned, zoomed, or when
+    // the map first loads
+    googleMap.addListener('tilesloaded', function () {
+      repaintMarkers(markerCluster, markers, googleMap.getBounds(), ui.getDateFilterStart(), ui.getDateFilterEnd());
+    });
+    resolve();
+  });
+  return promise;
 }
