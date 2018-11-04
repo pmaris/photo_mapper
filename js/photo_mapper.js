@@ -1,7 +1,8 @@
 var fs = require('fs');
-var map = require('./map.js');
-var model = require('./model.js');
-var ui = require('./ui.js')
+var path = require('path');
+var map = require(path.join(__dirname, 'map.js'));
+var model = require(path.join(__dirname, 'model.js'));
+var ui = require(path.join(__dirname, 'ui.js'));
 
 const configPath = './config.json';
 var config = {};

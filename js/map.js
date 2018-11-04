@@ -2,7 +2,7 @@ var fs = require('fs');
 var GoogleMapsLoader = require('google-maps');
 var MarkerClusterer = require('marker-clusterer-plus');
 var path = require('path');
-var ui = require('./ui');
+var ui = require(path.join(__dirname, 'ui.js'));
 
 var google;
 var googleMap;

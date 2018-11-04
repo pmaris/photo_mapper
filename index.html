@@ -6,7 +6,6 @@
         <link rel="stylesheet" href="node_modules/fancybox/dist/helpers/css/jquery.fancybox-thumbs.css?v=1.0.7" type="text/css" media="screen" />
         <link rel="stylesheet" href="css/jquery-ui-bootstrap/css/custom-theme/jquery-ui-1.10.0.custom.css">
         <link rel="stylesheet" href="css/photo_mapper.css">
-        <script src="js/photo_mapper.js"></script>
     </head>
     <body>
             <div id="button-bar">
@@ -60,7 +59,9 @@
             </p>
         </div>
         <script>
-            initialize();
+            var path = require('path');
+            var photoMapper = require(path.join(__dirname, 'js', 'photo_mapper.js'));
+            photoMapper.initialize();
           </script>
     </body>
 </html>
