@@ -213,11 +213,12 @@ describe('map', function () {
           }
         }
       };
-      var cluster = {
-        repaint: sinon.spy()
-      }
+      map.__set__('markerCluster', {
+        repaint: sinon.spy(),
+        getMarkers: sinon.stub().returns([marker])
+      });
 
-      map.repaintMarkers(cluster, [marker], mapBounds);
+      map.repaintMarkers(mapBounds);
 
       assert(marker.setVisible.calledOnceWith(true));
     });
@@ -242,11 +243,12 @@ describe('map', function () {
           }
         }
       };
-      var cluster = {
-        repaint: sinon.spy()
-      }
+      map.__set__('markerCluster', {
+        repaint: sinon.spy(),
+        getMarkers: sinon.stub().returns([marker])
+      });
 
-      map.repaintMarkers(cluster, [marker], mapBounds, startDate, startDate + 2);
+      map.repaintMarkers(mapBounds, startDate, startDate + 2);
 
       assert(marker.setVisible.calledOnceWith(true));
     });
@@ -270,11 +272,12 @@ describe('map', function () {
           }
         }
       };
-      var cluster = {
-        repaint: sinon.spy()
-      }
+      map.__set__('markerCluster', {
+        repaint: sinon.spy(),
+        getMarkers: sinon.stub().returns([marker])
+      });
 
-      map.repaintMarkers(cluster, [marker], mapBounds);
+      map.repaintMarkers(mapBounds);
 
       assert(marker.setVisible.calledOnceWith(false));
     });
@@ -299,11 +302,12 @@ describe('map', function () {
           }
         }
       };
-      var cluster = {
-        repaint: sinon.spy()
-      }
+      map.__set__('markerCluster', {
+        repaint: sinon.spy(),
+        getMarkers: sinon.stub().returns([marker])
+      });
 
-      map.repaintMarkers(cluster, [marker], mapBounds, startDate, Number.MAX_VALUE);
+      map.repaintMarkers(mapBounds, startDate, Number.MAX_VALUE);
 
       assert(marker.setVisible.calledOnceWith(false));
     });
@@ -328,20 +332,23 @@ describe('map', function () {
           }
         }
       };
-      var cluster = {
-        repaint: sinon.spy()
-      }
+      map.__set__('markerCluster', {
+        repaint: sinon.spy(),
+        getMarkers: sinon.stub().returns([marker])
+      });
 
-      map.repaintMarkers(cluster, [marker], mapBounds, Number.MIN_VALUE, endDate);
+      map.repaintMarkers(mapBounds, Number.MIN_VALUE, endDate);
 
       assert(marker.setVisible.calledOnceWith(false));
     });
 
     it('should repaint the marker cluster', function () {
       var cluster = {
-        repaint: sinon.spy()
+        repaint: sinon.spy(),
+        getMarkers: sinon.stub().returns([])
       };
-      map.repaintMarkers(cluster, [], {});
+      map.__set__('markerCluster', cluster);
+      map.repaintMarkers({});
       assert(cluster.repaint.calledOnce);
     });
   });
@@ -349,7 +356,7 @@ describe('map', function () {
   describe('#setupMap()', function () {
     it('should throw an error if the Google Maps Loader has not been initialized', function () {
       map.__set__('google', undefined);
-      assert.rejects(function () { map.setupMap([], 0, 0, 1) });
+      assert.rejects(map.setupMap([], 0, 0, 1));
     });
 
     it('should create the Map object', function () {

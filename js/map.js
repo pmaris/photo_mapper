@@ -6,6 +6,7 @@ var ui = require('./ui');
 
 var google;
 var googleMap;
+var markerCluster;
 
 const markerClusterOptions = {
   photoPath: './icons/m',
@@ -16,6 +17,7 @@ const markerClusterOptions = {
 
 module.exports = {
   createMarkersFromPhotos: createMarkersFromPhotos,
+  googleMap: googleMap,
   initializeGoogleMapsLoader: initializeGoogleMapsLoader,
   repaintMarkers: repaintMarkers,
   setupMap: setupMap
@@ -113,8 +115,6 @@ function initializeGoogleMapsLoader () {
 /**
  * Updates the visibility of the markers on the map based on the bounds of the
  * current map view and date filters, then redraws the marker clusters.
- * @param {object} cluster MarkerCluster object.
- * @param {object[]} mapMarkers Array of Google Maps Marker objects.
  * @param {object} mapBounds Google Maps LatLngBounds object.
  * @param {number} startDate Unix timestamp representing the start of the date
  *                           range, or null if no start date filter should be
@@ -123,7 +123,7 @@ function initializeGoogleMapsLoader () {
  *                         range, or null if no end date filter should be
  *                         applied.
  */
-function repaintMarkers (cluster, mapMarkers, mapBounds, startDate, endDate) {
+function repaintMarkers (mapBounds, startDate, endDate) {
   console.log('Repainting markers');
 
   if (!startDate) {
@@ -134,6 +134,7 @@ function repaintMarkers (cluster, mapMarkers, mapBounds, startDate, endDate) {
     endDate = Number.MAX_VALUE;
   }
 
+  var mapMarkers = markerCluster.getMarkers();
   for (var i = 0; i < mapMarkers.length; i++) {
     // TODO: Check if map for marker needs to be set to null
     mapMarkers[i].setMap(null);
@@ -145,7 +146,7 @@ function repaintMarkers (cluster, mapMarkers, mapBounds, startDate, endDate) {
     mapMarkers[i].setVisible(isVisible);
   }
 
-  cluster.repaint();
+  markerCluster.repaint();
 }
 
 /**
@@ -172,13 +173,13 @@ function setupMap (markers, centerLatitude, centerLongitude, zoom) {
     });
 
     console.log('Num markers: %s', markers.length);
-    var markerCluster = new MarkerClusterer(googleMap, markers, markerClusterOptions);
+    markerCluster = new MarkerClusterer(googleMap, markers, markerClusterOptions);
     google.maps.event.addListener(markerCluster, 'clusterclick', clusterClick);
 
     // Update the markers on the map whenever the map is panned, zoomed, or when
     // the map first loads
     googleMap.addListener('tilesloaded', function () {
-      repaintMarkers(markerCluster, markers, googleMap.getBounds(), ui.getDateFilterStart(), ui.getDateFilterEnd());
+      repaintMarkers(googleMap.getBounds(), ui.getDateFilterStart(), ui.getDateFilterEnd());
     });
     resolve();
   });

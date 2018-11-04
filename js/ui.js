@@ -21,6 +21,7 @@ module.exports = {
   getDateFilterEnd: getDateFilterEnd,
   getDateFilterStart: getDateFilterStart,
   getMapElement: getMapElement,
+  initializeFancybox: initializeFancybox,
   markerOnClick: markerOnClick,
   openWithFancyBox: openWithFancyBox
 };
@@ -99,16 +100,44 @@ function filtersAreVisible () {
   return $('#date-filter').is(':visible');
 };
 
+/**
+ * Get the value of the date input in the UI with the ending date for the filter
+ * to only show photos on the map taken in a specific date range.
+ * @return {number} Unix epoch timestamp of the ending day of the date filter
+ *                  range, or null if the filter has not been set.
+ */
 function getDateFilterEnd () {
-  return $('#filter-end-date')[0].value;
+  var endDate = $('#filter-end-date')[0].value;
+  if (endDate) {
+    var end = new Date(endDate);
+    return (end.getTime() / 1000) + (end.getTimezoneOffset() * 60) + (60 * 60 * 24) - 1;
+  } else {
+    return null;
+  }
 };
 
+/**
+ * Get the value of the date input in the UI with the starting date for the
+ * filter to only show photos on the map taken in a specific date range.
+ * @return {number} Unix epoch timestamp of the starting day of the date filter
+ *                  range, or null if the filter has not been set.
+ */
 function getDateFilterStart () {
-  return $('#filter-begin-date')[0].value;
+  var startDate = $('#filter-begin-date')[0].value;
+  if (startDate) {
+    var start = new Date(startDate);
+    return (start.getTime() / 1000) + (start.getTimezoneOffset() * 60);
+  } else {
+    return null;
+  }
 };
 
 function getMapElement () {
   document.getElementById('map');
+};
+
+function initializeFancybox () {
+  $('.fancybox').fancybox();
 };
 
 function markerOnClick () {
@@ -181,7 +210,7 @@ function selectDatabase () {
     model.Photo.findAll().then(photos => {
       createMarkersFromPhotos(photos);
     });
-    repaintMarkers(markerCluster, markers, map.getBounds(), filterStartTimestamp, filterEndTimestamp);
+    repaintMarkers(map.getBounds(), filterStartTimestamp, filterEndTimestamp);
   }
 }
 
@@ -265,7 +294,7 @@ function startPhotoFinder (folderPath, fileExtensions, updatePhotos) {
       $('#progress-bar-label').text('Adding photos to database');
       console.log('DONE');
       model.Photo.bulkCreate(geotaggedPhotos, { updateOnDuplicate: ['latitude', 'longitude'] });
-      repaintMarkers(markerCluster, markers, map.getBounds(), filterStartTimestamp, filterEndTimestamp);
+      repaintMarkers(map.getBounds(), filterStartTimestamp, filterEndTimestamp);
 
       $('#finder-result').show();
       var resultString = 'Number of photos added: ' + geotaggedPhotos.length;
