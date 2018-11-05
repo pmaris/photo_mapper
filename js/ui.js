@@ -3,9 +3,9 @@ require('jquery-ui-bundle');
 var path = require('path');
 require(path.join(__dirname, '../node_modules/fancybox/dist/js/jquery.fancybox.pack.js'));
 require(path.join(__dirname, '../node_modules/fancybox/dist/helpers/js/jquery.fancybox-thumbs.js'));
-var geotagFinder = require(path.join(__dirname, 'js', 'geotag_finder.js'));
-var map = require(path.join(__dirname, 'js', 'map.js'));
-var model = require(path.join(__dirname, 'js', 'model.js'));
+var geotagFinder = require(path.join(__dirname, 'geotag_finder.js'));
+var map = require(path.join(__dirname, 'map.js'));
+var model = require(path.join(__dirname, 'model.js'));
 var photoMapper = require(path.join(__dirname, 'photo_mapper.js'));
 
 const dialog = require('electron').remote.dialog;
