@@ -38,7 +38,7 @@ function initialize () {
     model.Photo.findAll().then(function (photos) {
       var markers = map.createMarkersFromPhotos(photos);
       map.initializeGoogleMapsLoader().then(function () {
-        map.initializeMap(markers, config.map.centerLatitude, config.map.centerLongitude, config.map.zoom);
+        map.setupMap(markers, config.map.centerLatitude, config.map.centerLongitude, config.map.zoom);
         resolve();
       });
     });

@@ -15,6 +15,7 @@
     "sqlite3": "^4.0.3"
   },
   "devDependencies": {
+    "electron-rebuild": "^1.8.2",
     "eslint": "^5.8.0",
     "eslint-config-standard": "^12.0.0",
     "eslint-plugin-import": "^2.14.0",
@@ -27,6 +28,7 @@
     "sinon": "^7.0.0"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "rebuild": "electron-rebuild -f -w sqlite3"
   }
 }

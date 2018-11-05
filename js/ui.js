@@ -1,7 +1,12 @@
 global.jQuery = require('jquery');
 require('jquery-ui-bundle');
-require('./node_modules/fancybox/dist/js/jquery.fancybox.pack.js');
-require('./node_modules/fancybox/dist/helpers/js/jquery.fancybox-thumbs.js');
+var path = require('path');
+require(path.join(__dirname, '../node_modules/fancybox/dist/js/jquery.fancybox.pack.js'));
+require(path.join(__dirname, '../node_modules/fancybox/dist/helpers/js/jquery.fancybox-thumbs.js'));
+var geotagFinder = require(path.join(__dirname, 'js', 'geotag_finder.js'));
+var map = require(path.join(__dirname, 'js', 'map.js'));
+var model = require(path.join(__dirname, 'js', 'model.js'));
+var photoMapper = require(path.join(__dirname, 'photo_mapper.js'));
 
 const dialog = require('electron').remote.dialog;
 var $ = jQuery;
@@ -15,21 +20,27 @@ const fancyBoxOptions = {
     }
   }
 };
+var cancelFinder;
+var selectedFolder;
 
 module.exports = {
+  confirmSaveMapStartLocation: confirmSaveMapStartLocation,
   filtersAreVisible: filtersAreVisible,
   getDateFilterEnd: getDateFilterEnd,
   getDateFilterStart: getDateFilterStart,
   getMapElement: getMapElement,
   initializeFancybox: initializeFancybox,
   markerOnClick: markerOnClick,
-  openWithFancyBox: openWithFancyBox
+  openFindPhotosModal: openFindPhotosModal,
+  openWithFancyBox: openWithFancyBox,
+  selectDatabase: selectDatabase,
+  selectFolder: selectFolder
 };
 
 /*
  * Open the modal for confirming saving the starting view of the map.
  */
-function confirmSaveMapStartLocation() {
+function confirmSaveMapStartLocation () {
   var modal = $('#confirm-save-map');
   modal.dialog({
     autoOpen: true,
@@ -42,7 +53,7 @@ function confirmSaveMapStartLocation() {
       {
         text: 'OK',
         click: function () {
-          saveMapStartLocation();
+          photoMapper.saveMapStartLocation();
           modal.dialog('close');
         }
       },
@@ -133,7 +144,7 @@ function getDateFilterStart () {
 };
 
 function getMapElement () {
-  document.getElementById('map');
+  return document.getElementById('map');
 };
 
 function initializeFancybox () {
@@ -205,12 +216,12 @@ function selectDatabase () {
 
   if (files) {
     config.database.path = files[0];
-    saveIni();
+    photoMapper.saveIni();
 
     model.Photo.findAll().then(photos => {
-      createMarkersFromPhotos(photos);
+      map.createMarkersFromPhotos(photos);
     });
-    repaintMarkers(map.getBounds(), filterStartTimestamp, filterEndTimestamp);
+    map.repaintMarkers(map.getBounds(), getDateFilterStart(), getDateFilterEnd());
   }
 }
 
@@ -248,12 +259,10 @@ function setProgressBarValue (value) {
   $('#progress-bar-label').text(value + ' / ' + $('#finder-progress-bar').progressbar('option', 'max') + ' photos checked');
 }
 
-
 /*
  * Run the geotagged photo finder.
  */
 function startPhotoFinder (folderPath, fileExtensions, updatePhotos) {
-
   $('#find-photos-modal').dialog('destroy');
   var modal = $('#finder-progress-modal');
   modal.dialog({
@@ -290,11 +299,11 @@ function startPhotoFinder (folderPath, fileExtensions, updatePhotos) {
 
   geotagFinder.getPhotoPaths(folderPath, fileExtensions).then(function (photos) {
     setProgressBarMax(photos.length);
-    getPhotoGeotags(photos, setProgressBarValue, 100, function (geotaggedPhotos) {
+    geotagFinder.getPhotoGeotags(photos, setProgressBarValue, 100, function (geotaggedPhotos) {
       $('#progress-bar-label').text('Adding photos to database');
       console.log('DONE');
       model.Photo.bulkCreate(geotaggedPhotos, { updateOnDuplicate: ['latitude', 'longitude'] });
-      repaintMarkers(map.getBounds(), filterStartTimestamp, filterEndTimestamp);
+      map.repaintMarkers(map.getBounds(), getDateFilterStart(), getDateFilterEnd());
 
       $('#finder-result').show();
       var resultString = 'Number of photos added: ' + geotaggedPhotos.length;

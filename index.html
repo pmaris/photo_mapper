@@ -9,9 +9,9 @@
     </head>
     <body>
             <div id="button-bar">
-                <input type="image" src="icons/home.png" class="button" onclick="confirmSaveMapStartLocation()" title="Save the current view of the map as the default when the application starts" />
-                <input type="image" src="icons/database.png" class="button" onclick="selectDatabase()" title="Select a database containing geotagged photos" />
-                <input type="image" src="icons/search.png" class="button" onclick="openFindPhotosModal()" title="Search your computer for geotagged photos" />
+                <input type="image" src="icons/home.png" class="button" onclick="ui.confirmSaveMapStartLocation()" title="Save the current view of the map as the default when the application starts" />
+                <input type="image" src="icons/database.png" class="button" onclick="ui.selectDatabase()" title="Select a database containing geotagged photos" />
+                <input type="image" src="icons/search.png" class="button" onclick="ui.openFindPhotosModal()" title="Search your computer for geotagged photos" />
                 <!--<input type="image" src="icons/x_pin.png" class="button" onclick="" title="Search your computer for photos that have not been geotagged" />-->
                 <input type="image" src="icons/calendar.png" class="button" id="date-filter-enable-button" onclick="jQuery('#date-filter').toggle()" title="Filter photos shown on the map by the date they were taken" />
                 <span id="date-filter">
@@ -26,7 +26,7 @@
         <div id="find-photos-modal" title="Find geotagged photos" hidden>
             <div id="select-options">
                 <div id="folder-select">
-                    <button id="select-folder-button" onclick="selectFolder()">Select a folder</button>
+                    <button id="select-folder-button" onclick="ui.selectFolder()">Select a folder</button>
                     <input id="folder-path" type="text" readonly />
                 </div>
                 <p>
@@ -61,6 +61,7 @@
         <script>
             var path = require('path');
             var photoMapper = require(path.join(__dirname, 'js', 'photo_mapper.js'));
+            var ui = require(path.join(__dirname, 'js', 'ui.js'));
             photoMapper.initialize();
           </script>
     </body>

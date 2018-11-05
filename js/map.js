@@ -88,7 +88,7 @@ function createMarkersFromPhotos (photos) {
 
 /**
  * Initialize the GoogleMapsLoader by setting the Google Maps API key and then
- * calling the GoogleMapLoader's load function, and sets the global google
+ * calling the GoogleMapsLoader's load function, and sets the global google
  * variable after the GoogleMapsLoader has loaded.
  sets the global google value with
  * @return {Promise} Resolves once the GoogleMapsLoader has loaded, and the
@@ -102,11 +102,11 @@ function initializeGoogleMapsLoader () {
         reject(new Error('An error ocurred when reading the google maps API key file: ' + err.message));
       } else {
         GoogleMapsLoader.KEY = String(data);
+        GoogleMapsLoader.load(function (googleObj) {
+          google = googleObj;
+          resolve();
+        });
       }
-    });
-    GoogleMapsLoader.load(function (googleObj) {
-      google = googleObj;
-      resolve();
     });
   });
   return promise;
