@@ -83,33 +83,25 @@ describe('geotag_finder', function () {
   });
 
   describe('#getPhotoPaths()', function () {
-    it('should return the paths to all photos in the directory that have the specified extensions', function (done) {
+    it('should return a resolved promise with the paths to all photos in the directory that have the specified extensions', function () {
       const photosDir = path.resolve(__dirname, 'data', 'photos');
-      geotagFinder.getPhotoPaths(photosDir, ['jpg'], function (files) {
+      return geotagFinder.getPhotoPaths(photosDir, ['jpg'], function (files) {
         assert.deepStrictEqual(files.sort(), [path.resolve(photosDir, 'a', 'c', 'c.jpg'), path.resolve(photosDir, 'b', 'b.jpg')]);
-        done();
       });
     })
 
-    it('should return an empty array if no files in the directory have the specified extensions', function (done) {
-      geotagFinder.getPhotoPaths(path.resolve(__dirname, 'data', 'photos'), ['tiff'], function (files) {
+    it('should return a resolved promise with an empty array if no files in the directory have the specified extensions', function () {
+      return geotagFinder.getPhotoPaths(path.resolve(__dirname, 'data', 'photos'), ['tiff'], function (files) {
         assert.deepStrictEqual(files, []);
-        done();
       });
     });
 
-    it('should return an empty array if given a path to directory that doesnt exist', function (done) {
-      geotagFinder.getPhotoPaths('/foo/bar', ['jpg'], function (files) {
-        assert.deepStrictEqual(files, []);
-        done();
-      });
+    it('should return a rejected promise if given a path to directory that doesnt exist', function () {
+      assert.rejects(geotagFinder.getPhotoPaths('/foo/bar', ['jpg']));
     });
 
-    it('should return an empty array if given a path to a file', function (done) {
-      geotagFinder.getPhotoPaths(__filename, ['jpg'], function (files) {
-        assert.deepStrictEqual(files, []);
-        done()
-      });
+    it('should return a rejected promise if given a path to a file', function () {
+      assert.rejects(geotagFinder.getPhotoPaths(__filename, ['jpg']));
     })
   });
 

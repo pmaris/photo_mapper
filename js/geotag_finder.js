@@ -105,23 +105,25 @@ function getPhotoGeotags (photoPaths, progressCallback, chunkSize, callback) {
  *                               search for photos.
  * @param {string[]} fileExtensions Case-insensitive file extensions of the
  *                                  files to search for.
- * @param {function} callback Function to call with the paths of photos that
- *                            were found. This function will be passed a single
- *                            argument, an array of unsorted absolute paths of
- *                            the photos that were found.
+ * @return {Promise} Resolves with an array of unsorted absolute paths of the
+ *                   photos that were found, or rejects if the provided
+ *                   baseDirectory cannot be read.
  */
-function getPhotoPaths (baseDirectory, fileExtensions, callback) {
-  var sanitizedExtensions = getSanitizedExtensions(fileExtensions);
-  return recursive(baseDirectory, [function (file, stats) {
-    return ignoreFile(file, stats, sanitizedExtensions);
-  }], function (err, files) {
-    if (err) {
-      console.error('An error ocurred when reading the directory: ' + err);
-      callback([]);
-    } else {
-      callback(files);
-    }
+function getPhotoPaths (baseDirectory, fileExtensions) {
+  var promise = new Promise(function (resolve, reject) {
+    var sanitizedExtensions = getSanitizedExtensions(fileExtensions);
+    return recursive(baseDirectory, [function (file, stats) {
+      return ignoreFile(file, stats, sanitizedExtensions);
+    }], function (err, files) {
+      if (err) {
+        console.error('An error ocurred when reading the directory: ' + err);
+        reject(err);
+      } else {
+        resolve(files);
+      }
+    });
   });
+  return promise;
 }
 
 /**
