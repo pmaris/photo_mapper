@@ -1,14 +1,13 @@
 var fs = require('fs');
 var path = require('path');
-var recursive = require('recursive-readdir');
 var exifParser = require('exif-parser');
+var walk = require('walk');
 
 module.exports = {
   getPhotoGeotags: getPhotoGeotags,
   getPhotoPaths: getPhotoPaths,
   getSanitizedExtensions: getSanitizedExtensions,
-  getPhotoExif: getPhotoExif,
-  ignoreFile: ignoreFile
+  getPhotoExif: getPhotoExif
 }
 
 /**
@@ -111,16 +110,31 @@ function getPhotoGeotags (photoPaths, progressCallback, chunkSize, callback) {
  */
 function getPhotoPaths (baseDirectory, fileExtensions) {
   var promise = new Promise(function (resolve, reject) {
+    if (!fs.lstatSync(baseDirectory).isDirectory()) {
+      reject(new Error(baseDirectory + ' is not a directory'));
+    }
+
+    var files = [];
     var sanitizedExtensions = getSanitizedExtensions(fileExtensions);
-    return recursive(baseDirectory, [function (file, stats) {
-      return ignoreFile(file, stats, sanitizedExtensions);
-    }], function (err, files) {
-      if (err) {
-        console.error('An error ocurred when reading the directory: ' + err);
-        reject(err);
-      } else {
-        resolve(files);
+
+    var walker = walk.walk(baseDirectory);
+    walker.on('file', function (root, fileStats, next) {
+      var filePath = path.join(root, fileStats.name);
+      var extension = path.extname(filePath).toLowerCase().replace('.', '');
+      if (sanitizedExtensions.indexOf(extension) !== -1) {
+        files.push(filePath);
       }
+      next();
+    });
+    walker.on('errors', function (root, nodeStatsArray, next) {
+      for (var nodeStats in nodeStatsArray) {
+        var nodePath = path.join(root, nodeStats.name);
+        console.error('Error occurred while reading  ' + nodePath + ': ' + nodeStats.error);
+      }
+      next();
+    });
+    walker.on('end', function () {
+      resolve(files);
     });
   });
   return promise;
@@ -137,19 +151,4 @@ function getSanitizedExtensions (fileExtensions) {
     return String(currentValue).toLowerCase().replace('.', '');
   });
   return sanitizedExtensions;
-}
-
-/** Determines if a file should be excluded from an array of files returned by
- * the recursize-readdir package.
- * @param {string} file Absolute path of a file.
- * @param {object} stats Stats object returned from fs.lstat()
- * @param {string[]} sanitizedExtensions File extensions to be ignored,
-                                         sanitized to be entirely lowercase and
- *                                       not include periods.
- * @return {boolean} Indicates whether the file should be ignored, true if the
- *                   file should be ignored.
- */
-function ignoreFile (file, stats, sanitizedExtensions) {
-  var extension = path.extname(file).toLowerCase().replace('.', '');
-  return !stats.isDirectory() && sanitizedExtensions.indexOf(extension) === -1;
 }

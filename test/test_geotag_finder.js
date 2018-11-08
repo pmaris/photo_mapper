@@ -122,18 +122,4 @@ describe('geotag_finder', function () {
       assert.deepStrictEqual(geotagFinder.getSanitizedExtensions([123, true, null]), ['123', 'true', 'null']);
     });
   });
-
-  describe('#ignoreFile()', function () {
-    it('should return false when the path is a directory', function () {
-      assert.strictEqual(geotagFinder.ignoreFile('abcd.jpg', { isDirectory: function () { return true } }, ['jpg']), false);
-    });
-
-    it('should return false when the file extension is in the array of sanitized extensions', function () {
-      assert.strictEqual(geotagFinder.ignoreFile('abcd.jpg', { isDirectory: function () { return false } }, ['jpg']), false);
-    });
-
-    it('should return true when the the file extension is not in the array of sanitized extensions', function () {
-      assert.strictEqual(geotagFinder.ignoreFile('abcd.cr2', { isDirectory: function () { return false } }, ['jpg']), true);
-    });
-  });
 });
