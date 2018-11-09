@@ -2,7 +2,6 @@ var fs = require('fs');
 var GoogleMapsLoader = require('google-maps');
 var MarkerClusterer = require('marker-clusterer-plus');
 var path = require('path');
-var ui = require(path.join(__dirname, 'ui.js'));
 
 var google;
 var googleMap;
@@ -24,22 +23,6 @@ module.exports = {
 };
 
 /**
- * Handler for when a cluster of markers on the map is clicked on to open all of
- * the photos in the cluster with Fancybox.
- * @param {MarkerCluster} cluster Cluster of markers on the map.
- */
-function clusterClick (cluster) {
-  var markers = [];
-  for (var i = 0; i < cluster.getMarkers().length; i++) {
-    markers.push({
-      href: cluster.getMarkers()[i].photo.path,
-      title: cluster.getMarkers()[i].photo.title
-    });
-  }
-  ui.openWithFancyBox(markers);
-}
-
-/**
  * Create Google Maps markers for provided photos.
  * @param {object[]} photos Details of geotagged photos, with the following
  *                          keys and values:
@@ -50,6 +33,7 @@ function clusterClick (cluster) {
  *                              the photo was taken.
  *                            create_time: Unix timestamp representing the time
  *                              the photo was taken.
+ * @param {function} onClick Function to call when a map marker is clicked on.
  * @return {Promise} Resolves with an array of markers for all of the provided
  *                   photos. The position of the marker is the location where
  *                   the corresponding photo was taken, and each marker has a
@@ -60,7 +44,7 @@ function clusterClick (cluster) {
  *                     createTime: Unix timestamp representing the time the
  *                       photo was taken.
  */
-function createMarkersFromPhotos (photos) {
+function createMarkersFromPhotos (photos, onClick) {
   var promise = new Promise(function (resolve, reject) {
     var markers = [];
     for (var i = 0; i < photos.length; i++) {
@@ -78,7 +62,7 @@ function createMarkersFromPhotos (photos) {
         createTime: photos[i].create_time
       };
 
-      google.maps.event.addListener(marker, 'click', ui.markerOnClick);
+      google.maps.event.addListener(marker, 'click', onClick);
       markers.push(marker);
     }
     resolve(markers);
@@ -152,25 +136,22 @@ function repaintMarkers (mapBounds, startDate, endDate) {
 /**
  * Initialize the Google Map object, and add a MarkerClusterer to the map for
  * the provided markers, and paint the markers on the map.
+ * @param {Element} mapElement The DOM element containing the Google map.
+ * @param {google.maps.MapOptions} mapOptions Object containing the options to
+ *                                            create the map with.
  * @param {google.maps.Marker[]} markers Google Map markers for all photos to
  *                                       display on the map.
- * @param {number} centerLatitude Latitude of the initial center position of the
- *                                map.
- * @param {number} centerLongitude Longitude of the initial center position of
- *                                 the map.
- * @param {number} zoom Initial zoom level of the map.
+ * @param {function} clusterClick Function to call when a cluster on the map is
+ *                                clicked on.
  * @return {Promise} Resolves once the map has been setup. Rejects if
  *                   GoogleMapsLoader has not been initialized.
  */
-function setupMap (markers, centerLatitude, centerLongitude, zoom) {
+function setupMap (mapElement, mapOptions, markers, clusterClick) {
   var promise = new Promise(function (resolve, reject) {
     if (!google) {
       reject(new Error('Google Maps Loader not initialized'));
     }
-    googleMap = new google.maps.Map(ui.getMapElement(), {
-      center: { lat: centerLatitude, lng: centerLongitude },
-      zoom: zoom
-    });
+    googleMap = new google.maps.Map(mapElement, mapOptions);
 
     console.log('Num markers: %s', markers.length);
     markerCluster = new MarkerClusterer(googleMap, markers, markerClusterOptions);
@@ -179,7 +160,7 @@ function setupMap (markers, centerLatitude, centerLongitude, zoom) {
     // Update the markers on the map whenever the map is panned, zoomed, or when
     // the map first loads
     googleMap.addListener('tilesloaded', function () {
-      repaintMarkers(googleMap.getBounds(), ui.getDateFilterStart(), ui.getDateFilterEnd());
+      repaintMarkers(googleMap.getBounds(), null, null);
     });
     resolve();
   });

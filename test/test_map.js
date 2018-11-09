@@ -17,44 +17,6 @@ mockRequire('../js/ui.js', {
 var map = rewire('../js/map.js');
 
 describe('map', function () {
-  describe('#clusterClick()', function () {
-    it('should open the photos for the markers in Fancybox', function () {
-      var markers = [
-        {
-          photo: {
-            path: 'foo',
-            title: 'bar'
-          }
-        },
-        {
-          photo: {
-            path: 'baz',
-            title: 'buz'
-          }
-        }
-      ];
-
-      var cluster = {
-        getMarkers: function () {
-          return markers;
-        }
-      };
-      var expectedResponse = [
-        {
-          href: markers[0].photo.path,
-          title: markers[0].photo.title
-        },
-        {
-          href: markers[1].photo.path,
-          title: markers[1].photo.title
-        }
-      ];
-
-      map.__get__('clusterClick')(cluster);
-      assert(map.__get__('ui').openWithFancyBox.calledWith(expectedResponse));
-    });
-  });
-
   describe('#createMarkersFromPhotos()', function () {
     it('should return Google Maps markers for every photo', function () {
       var Marker = sinon.stub();
@@ -83,7 +45,7 @@ describe('map', function () {
         }
       ];
 
-      return map.createMarkersFromPhotos(photos).then(function (markers) {
+      return map.createMarkersFromPhotos(photos, function () {}).then(function (markers) {
         assert.strictEqual(markers.length, 2);
         assert(Marker.calledTwice);
         assert(Marker.calledWith({ position: { lat: photos[0].latitude, lng: photos[0].longitude } }));
@@ -118,7 +80,7 @@ describe('map', function () {
         }
       ];
 
-      return map.createMarkersFromPhotos(photos).then(function (markers) {
+      return map.createMarkersFromPhotos(photos, function () {}).then(function (markers) {
         assert.deepStrictEqual(markers[0].photo, {
           path: photos[0].path,
           title: 'bar',
@@ -134,6 +96,7 @@ describe('map', function () {
 
     it('should add on click events for every marker', function () {
       var addListener = sinon.stub();
+      var onClick = sinon.stub();
       var googleMap = {
         maps: {
           Marker: sinon.stub(),
@@ -158,10 +121,10 @@ describe('map', function () {
           create_time: 987654321
         }
       ];
-      return map.createMarkersFromPhotos(photos).then(function (markers) {
+      return map.createMarkersFromPhotos(photos, onClick).then(function (markers) {
         assert(addListener.calledTwice);
-        assert(addListener.calledWith(markers[0], 'click', map.__get__('ui').markerOnClick));
-        assert(addListener.calledWith(markers[1], 'click', map.__get__('ui').markerOnClick));
+        assert(addListener.calledWith(markers[0], 'click', onClick));
+        assert(addListener.calledWith(markers[1], 'click', onClick));
       });
     });
   });
@@ -356,13 +319,14 @@ describe('map', function () {
   describe('#setupMap()', function () {
     it('should throw an error if the Google Maps Loader has not been initialized', function () {
       map.__set__('google', undefined);
-      assert.rejects(map.setupMap([], 0, 0, 1));
+      assert.rejects(map.setupMap({}, {}, [], function () {}));
     });
 
     it('should create the Map object', function () {
       var googleMap = {
         addListener: sinon.stub()
       };
+      var mapElement = {};
       var Map = sinon.stub().returns(googleMap);
       var google = {
         maps: {
@@ -375,18 +339,19 @@ describe('map', function () {
       map.__set__('google', google);
       map.__set__('MarkerClusterer', sinon.stub());
 
-      var centerLatitude = 56.7;
-      var centerLongitude = -123.45;
-      var zoom = 12;
+      var mapOptions = {
+        center: {
+          lat: 56.7,
+          lng: -123.45
+        },
+        zoom: 12
+      }
 
       assert.strictEqual(map.__get__('googleMap'), undefined);
 
-      return map.setupMap([], centerLatitude, centerLongitude, zoom).then(function () {
+      return map.setupMap(mapElement, mapOptions, [], function () {}).then(function () {
         assert.strictEqual(map.__get__('googleMap'), googleMap);
-        assert(Map.calledOnceWith(map.__get__('ui').getMapElement(), {
-          center: { lat: centerLatitude, lng: centerLongitude },
-          zoom: zoom
-        }));
+        assert(Map.calledOnceWith(mapElement, mapOptions));
       });
     });
 
@@ -408,7 +373,7 @@ describe('map', function () {
 
       var MarkerClusterer = sinon.stub();
       map.__set__('MarkerClusterer', MarkerClusterer);
-      return map.setupMap(markers, 0, 0, 1).then(function () {
+      return map.setupMap({}, {}, markers, function () {}).then(function () {
         MarkerClusterer.calledOnceWith(markers, map.__get__('googleMap'), map.__get__('markerClusterOptions'));
       });
     });
@@ -436,8 +401,8 @@ describe('map', function () {
 
       var MarkerClusterer = sinon.stub();
       map.__set__('MarkerClusterer', MarkerClusterer);
-      return map.setupMap(markers, 0, 0, 1).then(function () {
-        addListener.calledOnceWith(MarkerClusterer, markers, googleMap.getBounds(), map.__get__('ui').getDateFilterStart(), map.__get__('ui').getDateFilterEnd());
+      return map.setupMap({}, {}, markers, function () {}).then(function () {
+        addListener.calledOnceWith(MarkerClusterer, markers, googleMap.getBounds(), null, null);
       });
     });
   });
