@@ -37,16 +37,16 @@ describe('geotag_finder', function () {
       ];
       var expectedResponse = [
         {
-          createTime: 1503423638,
+          create_time: 1503423638,
           latitude: 46.585755679985255,
           longitude: -112.01842411999628,
-          filePath: path.resolve(__dirname, 'data', 'photos', 'a', 'c', 'c.jpg')
+          path: path.resolve(__dirname, 'data', 'photos', 'a', 'c', 'c.jpg')
         },
         {
-          createTime: 1503247734,
+          create_time: 1503247734,
           latitude: 43.6177317599992,
           longitude: -116.19964063006155,
-          filePath: path.resolve(__dirname, 'data', 'photos', 'b', 'b.jpg')
+          path: path.resolve(__dirname, 'data', 'photos', 'b', 'b.jpg')
         }
       ]
 

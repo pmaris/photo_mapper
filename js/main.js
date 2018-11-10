@@ -215,8 +215,8 @@ function initialize () {
     initializeFancybox();
     config = loadConfig(configPath);
     model.Photo.findAll().then(function (photos) {
-      var markers = map.createMarkersFromPhotos(photos);
       map.initializeGoogleMapsLoader().then(function () {
+        var markers = map.createMarkersFromPhotos(photos);
         map.setupMap(getMapElement(), {
           center: {
             lat: config.map.centerLatitude,
@@ -299,9 +299,7 @@ function openFindPhotosModal () {
         'class': 'button-blue',
         click: function () {
           if (selectedFolder) {
-            startPhotoFinder(selectedFolder,
-              $('#file-extensions')[0].value.split(' '),
-              $('#update-photos-checkbox')[0].checked);
+            startPhotoFinder(selectedFolder, $('#file-extensions')[0].value.split(' '));
           } else {
             $('#no-folder-selected').show();
           }
@@ -444,21 +442,16 @@ function startPhotoFinder (folderPath, fileExtensions, updatePhotos) {
     setProgressBarMax(photos.length);
     geotagFinder.getPhotoGeotags(photos, setProgressBarValue, 100, function (geotaggedPhotos) {
       $('#progress-bar-label').text('Adding photos to database');
-      console.log('DONE');
-      model.Photo.bulkCreate(geotaggedPhotos, { updateOnDuplicate: ['latitude', 'longitude'] });
-      map.repaintMarkers(map.getBounds(), getDateFilterStart(), getDateFilterEnd());
+      model.Photo.bulkCreate(geotaggedPhotos, { ignoreDuplicates: true });
+      map.repaintMarkers(map.getMap().getBounds(), getDateFilterStart(), getDateFilterEnd());
 
       $('#finder-result').show();
-      var resultString = 'Number of photos added: ' + geotaggedPhotos.length;
-      if (updatePhotos) {
-        resultString += '<br>Number of photos updated: ' + updatePhotos.length;
-      }
+      var resultString = 'Found ' + geotaggedPhotos.length + ' geotagged photos';
       $('#finder-result').html(resultString);
       $('#progress-bar-label').text('Finished');
 
       $('#close-finder-modal-button').show();
       $('#cancel-finder-button').hide();
-      console.log($('#close-finder-modal-button'));
     });
   });
 }

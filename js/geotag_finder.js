@@ -78,10 +78,10 @@ function getPhotoGeotags (photoPaths, progressCallback, chunkSize, callback) {
 
       if (exif && exif.tags.GPSLatitude && exif.tags.GPSLongitude) {
         geotaggedPhotos.push({
-          filePath: photoPaths[index],
+          path: photoPaths[index],
           latitude: exif.tags.GPSLatitude,
           longitude: exif.tags.GPSLongitude,
-          createTime: 'DateTimeOriginal' in exif.tags ? exif.tags.DateTimeOriginal : 0
+          create_time: 'DateTimeOriginal' in exif.tags ? exif.tags.DateTimeOriginal : 0
         })
       }
 

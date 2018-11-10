@@ -7,7 +7,10 @@ const sequelize = new Sequelize('sqlite:../geotags.db');
 sequelize.sync();
 
 const Photo = sequelize.define('photos', {
-  path: Sequelize.STRING,
+  path: {
+    type: Sequelize.STRING,
+    primaryKey: true
+  },
   latitude: Sequelize.DOUBLE,
   longitude: Sequelize.DOUBLE,
   create_time: Sequelize.INTEGER
