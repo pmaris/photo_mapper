@@ -129,6 +129,14 @@ describe('map', function () {
     });
   });
 
+  describe('#getMap()', function () {
+    it('should return the module\'s googleMap object', function () {
+      var googleMap = sinon.stub();
+      map.__set__('googleMap', googleMap);
+      assert.strictEqual(map.getMap(), googleMap);
+    })
+  });
+
   describe('#initializeGoogleMapsLoader()', function () {
     it('should set the Google Maps API key to the contents of the google_maps.key file', function () {
       var key = 'foobar';
@@ -346,8 +354,6 @@ describe('map', function () {
         },
         zoom: 12
       }
-
-      assert.strictEqual(map.__get__('googleMap'), undefined);
 
       return map.setupMap(mapElement, mapOptions, [], function () {}).then(function () {
         assert.strictEqual(map.__get__('googleMap'), googleMap);

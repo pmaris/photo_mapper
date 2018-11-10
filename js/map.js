@@ -16,7 +16,7 @@ const markerClusterOptions = {
 
 module.exports = {
   createMarkersFromPhotos: createMarkersFromPhotos,
-  googleMap: googleMap,
+  getMap: getMap,
   initializeGoogleMapsLoader: initializeGoogleMapsLoader,
   repaintMarkers: repaintMarkers,
   setupMap: setupMap
@@ -69,6 +69,16 @@ function createMarkersFromPhotos (photos, onClick) {
   });
   return promise;
 };
+
+/**
+ * Retrieve the module's Google Map instance.
+ * @return {google.maps.Map} The module's Google Map object. This can be
+ *                           undefined if the method is called before the map
+ *                           has been initialized.
+ */
+function getMap () {
+  return googleMap;
+}
 
 /**
  * Initialize the GoogleMapsLoader by setting the Google Maps API key and then

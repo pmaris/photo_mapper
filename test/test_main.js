@@ -63,9 +63,9 @@ describe('photo_mapper', function () {
       main.__set__('getDateFilterStart', sinon.stub().returns(startDate));
       var bounds = 'foo';
       main.__set__('map', {
-        googleMap: {
+        getMap: sinon.stub().returns({
           getBounds: sinon.stub().returns(bounds)
-        }
+        })
       });
       var repaintMarkers = sinon.stub();
       main.__get__('map').repaintMarkers = repaintMarkers;
@@ -81,9 +81,9 @@ describe('photo_mapper', function () {
       main.__set__('getDateFilterStart', sinon.stub().returns(null));
       var bounds = 'foo';
       main.__set__('map', {
-        googleMap: {
+        getMap: sinon.stub().returns({
           getBounds: sinon.stub().returns(bounds)
-        }
+        })
       });
       var repaintMarkers = sinon.stub();
       main.__get__('map').repaintMarkers = repaintMarkers;
@@ -103,6 +103,30 @@ describe('photo_mapper', function () {
 
       assert.strictEqual(repaintMarkers.called, false);
     });
+  });
+
+  describe('#initialize()', function () {
+    /*
+    it('should initialize Fancybox', function () {
+      sinon.stub(main, 'initializeFancybox');
+      sinon.stub(main, 'loadConfig');
+      sinon.stub(main.__get__('model').Photo, 'findAll');
+      main.__set__('map', {
+        createMarkersFromPhotos: sinon.stub(),
+        initializeGoogleMapsLoader: sinon.stub(),
+        setupMap: sinon.stub()
+      });
+      console.log(main.initialize());
+      return main.initialize().then(function () {
+        assert(false);
+      });
+    });*/
+
+    it('should load the application\'s configuration file');
+
+    it('should create map markers for all of the photos in the database');
+
+    it('should initialize the map');
   });
 
   describe('#loadConfig()', function () {
@@ -191,21 +215,23 @@ describe('photo_mapper', function () {
       var latitude = 12;
       var longitude = 25;
       var zoom = 3;
-      main.__get__('map').googleMap = {
-        getZoom: function () {
-          return zoom;
-        },
-        getCenter: function () {
-          return {
-            lat: function () {
-              return latitude;
-            },
-            lng: function () {
-              return longitude;
+      main.__set__('map', {
+        getMap: sinon.stub().returns({
+          getZoom: function () {
+            return zoom;
+          },
+          getCenter: function () {
+            return {
+              lat: function () {
+                return latitude;
+              },
+              lng: function () {
+                return longitude;
+              }
             }
           }
-        }
-      };
+        })
+      });
       var stub = sinon.stub()
       main.__set__('saveConfig', stub);
 

@@ -164,7 +164,7 @@ function filterDatesChanged () {
     console.log('Start timestamp: %s', filterStartTimestamp);
     console.log('End timestamp: %s', filterEndTimestamp);
 
-    map.repaintMarkers(map.googleMap.getBounds(), filterStartTimestamp, filterEndTimestamp);
+    map.repaintMarkers(map.getMap().getBounds(), filterStartTimestamp, filterEndTimestamp);
   }
 }
 
@@ -325,16 +325,17 @@ function saveConfig () {
  * file.
  */
 function saveMapStartLocation () {
-  if (map.googleMap) {
+  var googleMap = map.getMap();
+  if (googleMap) {
     console.log('Updating map start location');
 
     if (!config.map) {
       config.map = {};
     };
 
-    config.map.centerLatitude = map.googleMap.getCenter().lat();
-    config.map.centerLongitude = map.googleMap.getCenter().lng();
-    config.map.zoom = map.googleMap.getZoom();
+    config.map.centerLatitude = googleMap.getCenter().lat();
+    config.map.centerLongitude = googleMap.getCenter().lng();
+    config.map.zoom = googleMap.getZoom();
     saveConfig();
   }
 }
