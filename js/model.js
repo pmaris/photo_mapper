@@ -2,7 +2,11 @@ const Sequelize = require('sequelize');
 
 const sequelize = new Sequelize('sqlite:../geotags.db');
 
-const Photo = sequelize.define('photo', {
+// Database file must be created if it doesn't already exist before defining the
+// model
+sequelize.sync();
+
+const Photo = sequelize.define('photos', {
   path: Sequelize.STRING,
   latitude: Sequelize.DOUBLE,
   longitude: Sequelize.DOUBLE,
