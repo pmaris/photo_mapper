@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "main": "main.js",
   "dependencies": {
-    "electron": "2.0.2",
+    "electron": "^3.0.9",
     "exif-parser": "^0.1.12",
     "fancybox": "^3.0.0",
     "google-maps": "^3.2.1",
