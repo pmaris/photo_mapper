@@ -18,6 +18,17 @@ Getting started
 
 Currently, the map works without a Google Maps API key. If this ever changes in the future, you will have to sign up for a Google Maps API key and then create the file `google_maps.key` in the repository's root directory, and then add your key to the file.
 
+Testing
+=======
+Unit tests for the application are written using Mocha.
+
+Run the tests with the command:
+`npm test`
+
+Troubleshooting
+===============
+If you see the error `Uncaught Error: Please install sqlite3 package manually` in the browser console when running the application, run the command `npm run rebuild` from inside of the repository's root directory to manually build the `sqlite3` package.
+
 Screenshots
 ===========
 ![Map view, showing clustering of photos](https://raw.githubusercontent.com/pmaris/photo_mapper/master/screenshots/overview.png "Map view, showing clustering of photos")
