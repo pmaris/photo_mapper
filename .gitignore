@@ -1,6 +1,9 @@
 # Google Maps API key
 google_maps.key
 
+# Application configuration
+config.json
+
 # Databases
 *.db
 *.sqlite

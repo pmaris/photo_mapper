@@ -92,15 +92,16 @@ function initialize () {
     config = loadConfig(configPath);
     model.Photo.findAll().then(function (photos) {
       map.initializeGoogleMapsLoader().then(function () {
-        var markers = map.createMarkersFromPhotos(photos);
-        map.setupMap(ui.getMapElement(), {
-          center: {
-            lat: config.map.centerLatitude,
-            lng: config.map.centerLongitude
-          },
-          zoom: config.map.zoom
-        }, markers, clusterClick);
-        resolve();
+        map.createMarkersFromPhotos(photos, ui.markerOnClick).then(markers => {
+          map.setupMap(ui.getMapElement(), {
+            center: {
+              lat: config.map.centerLatitude,
+              lng: config.map.centerLongitude
+            },
+            zoom: config.map.zoom
+          }, markers, clusterClick);
+          resolve();
+        });
       });
     });
   });

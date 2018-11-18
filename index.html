@@ -16,9 +16,9 @@
                 <input type="image" src="icons/calendar.png" class="button" id="date-filter-enable-button" onclick="jQuery('#date-filter').toggle()" title="Filter photos shown on the map by the date they were taken" />
                 <span id="date-filter">
                     Start date:
-                    <input type="date" id="filter-begin-date" onchange="filterDatesChanged()" />
+                    <input type="date" id="filter-begin-date" onchange="main.filterDatesChanged()" />
                     End date:
-                    <input type="date" id="filter-end-date" onchange="filterDatesChanged()" />
+                    <input type="date" id="filter-end-date" onchange="main.filterDatesChanged()" />
                 </span>
             </div>
             <div id="map"></div>

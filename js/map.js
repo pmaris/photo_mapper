@@ -134,7 +134,7 @@ function repaintMarkers (mapBounds, startDate, endDate) {
     mapMarkers[i].setMap(null);
     var latitude = mapMarkers[i].getPosition().lat();
     var longitude = mapMarkers[i].getPosition().lng();
-    var isVisible = mapBounds.contains({ lat: latitude, lon: longitude }) &&
+    var isVisible = mapBounds.contains({ lat: latitude, lng: longitude }) &&
                                        mapMarkers[i].photo.createTime >= startDate &&
                                        mapMarkers[i].photo.createTime <= endDate;
     mapMarkers[i].setVisible(isVisible);
