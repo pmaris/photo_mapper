@@ -1,7 +1,1 @@
-{
-  "map": {
-    "centerLatitude": 12,
-    "centerLongitude": 25,
-    "zoom": 3
-  }
-}
+{"map":{"centerLatitude":2.4656928468428996,"centerLongitude":302.4254713161695,"zoom":7},"database":{"path":"/home/pierre/geotags.db"}}

@@ -30,8 +30,8 @@ describe('geotag_finder', function () {
   });
 
   describe('#getPhotoGeotags()', function () {
-    it('should return the location details of geotagged photos', function () {
-      var photos = [
+    it('should return the location details of geotagged photos', function (done) {
+      var photoPaths = [
         path.resolve(__dirname, 'data', 'photos', 'a', 'c', 'c.jpg'),
         path.resolve(__dirname, 'data', 'photos', 'b', 'b.jpg')
       ];
@@ -50,34 +50,38 @@ describe('geotag_finder', function () {
         }
       ]
 
-      geotagFinder.getPhotoGeotags(photos, function () {}, 100, function (photos) {
+      geotagFinder.getPhotoGeotags(photoPaths, function () {}, 100, function (photos) {
         assert.deepStrictEqual(photos.sort(), expectedResponse.sort());
+        done();
       });
     });
 
-    it('should not include non-geotagged photos in the returned array', function () {
+    it('should not include non-geotagged photos in the returned array', function (done) {
       geotagFinder.getPhotoGeotags([path.resolve(__dirname, 'data', 'image_without_geotags.jpg')], function () {}, 100, function (photos) {
         assert.deepStrictEqual(photos, []);
+        done();
       });
     });
 
-    it('should not include photos with EXIF data that cannot be read in the returned array', function () {
+    it('should not include photos with EXIF data that cannot be read in the returned array', function (done) {
       geotagFinder.getPhotoGeotags([path.resolve(__dirname, 'data', 'image_without_exif.jpg')], function () {}, 100, function (photos) {
         assert.deepStrictEqual(photos, []);
+        done();
       });
     });
 
-    it('should update the progress callback function with the number of photos that have been read', function () {
+    it('should update the progress callback function with the number of photos that have been read', function (done) {
       var progressCallback = sinon.fake();
-      var photos = [
+      var photoPaths = [
         path.resolve(__dirname, 'data', 'image_with_exif.jpg'),
         path.resolve(__dirname, 'data', 'image_without_exif.jpg'),
         path.resolve(__dirname, 'data', 'image_without_geotags.jpg')
       ];
 
-      geotagFinder.getPhotoGeotags(photos, progressCallback, 1, function (photos) {
-        assert.strictEqual(progressCallback.callCount, 3);
-        assert.deepStrictEqual(progressCallback.args, [[1], [2], [3]]);
+      geotagFinder.getPhotoGeotags(photoPaths, progressCallback, 1, function (photos) {
+        assert.strictEqual(progressCallback.callCount, 4);
+        assert.deepStrictEqual(progressCallback.args, [[0, 3], [1], [2], [3]]);
+        done();
       });
     });
   });

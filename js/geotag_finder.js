@@ -39,8 +39,10 @@ function getPhotoExif (photoPath) {
  * @param {string[]} photoPaths Absolute paths of photos to get the geotags of.
  * @param {function} progressCallback Callback to be called with each iteration
  *                                    over the array of photo paths. This
- *                                    function will be called with the number of
- *                                    photos that have been checked so far.
+ *                                    function will be called with two
+ *                                    arguments, the number of photos that have
+ *                                    been checked so far, and the total number
+ *                                    of photos that have been found.
  * @param {number} chunkSize Number of photos to read in each iteration over the
  *                           array of photo paths, between calls to the
  *                           progressCallback function.
@@ -61,8 +63,10 @@ function getPhotoExif (photoPath) {
 function getPhotoGeotags (photoPaths, progressCallback, chunkSize, callback) {
   var index = 0;
   var geotaggedPhotos = [];
-
-  function work () {
+  /**
+   * @param {string[]} photoPaths Absolute paths of photos to get the geotags of.
+   */
+  function work (photoPaths) {
     var cnt = chunkSize;
     // TODO: Reimplement a way to cancel the finder
     while (cnt-- && index < photoPaths.length) {
@@ -88,13 +92,15 @@ function getPhotoGeotags (photoPaths, progressCallback, chunkSize, callback) {
       ++index;
     }
     if (index < photoPaths.length) {
-      setTimeout(work, 1);
+      setTimeout(function () { work(photoPaths) }, 1);
     }
     if (index >= photoPaths.length) {
       callback(geotaggedPhotos);
     }
   }
-  work();
+  // Update progress with the total number of photos that were found
+  progressCallback(0, photoPaths.length);
+  work(photoPaths);
 }
 
 /**

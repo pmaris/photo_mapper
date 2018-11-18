@@ -9,10 +9,13 @@ mockRequire('jquery', { $: sinon.stub() });
 mockRequire('jquery-ui-bundle');
 mockRequire(path.join(__dirname, '../node_modules/fancybox/dist/js/jquery.fancybox.pack.js'));
 mockRequire(path.join(__dirname, '../node_modules/fancybox/dist/helpers/js/jquery.fancybox-thumbs.js'));
-mockRequire('../js/map.js');
+mockRequire('google-maps');
+var map = require('../js/map.js');
 var main = rewire('../js/main.js');
+var model = require('../js/model.js');
+var ui = require('../js/ui.js');
 
-describe('photo_mapper', function () {
+describe('main', function () {
   describe('#clusterClick()', function () {
     it('should open the photos for the markers in Fancybox', function () {
       var fancyBoxOpen = sinon.stub();
@@ -48,7 +51,7 @@ describe('photo_mapper', function () {
         }
       ];
 
-      main.__get__('clusterClick')(cluster);
+      main.clusterClick(cluster);
       assert(fancyBoxOpen.calledWith(expectedMarkerContent, main.__get__('fancyBoxOptions')));
     });
   });
@@ -58,17 +61,14 @@ describe('photo_mapper', function () {
       var startDate = 1234;
       var endDate = 5678;
 
-      main.__set__('filtersAreVisible', sinon.stub().returns(true));
-      main.__set__('getDateFilterEnd', sinon.stub().returns(endDate));
-      main.__set__('getDateFilterStart', sinon.stub().returns(startDate));
+      sinon.stub(ui, 'filtersAreVisible').returns(true);
+      sinon.stub(ui, 'getDateFilterEnd').returns(endDate);
+      sinon.stub(ui, 'getDateFilterStart').returns(startDate);
       var bounds = 'foo';
-      main.__set__('map', {
-        getMap: sinon.stub().returns({
-          getBounds: sinon.stub().returns(bounds)
-        })
+      sinon.stub(map, 'getMap').returns({
+        getBounds: sinon.stub().returns(bounds)
       });
-      var repaintMarkers = sinon.stub();
-      main.__get__('map').repaintMarkers = repaintMarkers;
+      var repaintMarkers = sinon.stub(map, 'repaintMarkers');
 
       main.filterDatesChanged();
 
@@ -76,17 +76,14 @@ describe('photo_mapper', function () {
     });
 
     it('should repaint the map markers with a default start and end date if the filters have not been set', function () {
-      main.__set__('filtersAreVisible', sinon.stub().returns(true));
-      main.__set__('getDateFilterEnd', sinon.stub().returns(null));
-      main.__set__('getDateFilterStart', sinon.stub().returns(null));
+      sinon.stub(ui, 'filtersAreVisible').returns(true);
+      sinon.stub(ui, 'getDateFilterEnd').returns(null);
+      sinon.stub(ui, 'getDateFilterStart').returns(null);
       var bounds = 'foo';
-      main.__set__('map', {
-        getMap: sinon.stub().returns({
-          getBounds: sinon.stub().returns(bounds)
-        })
+      sinon.stub(map, 'getMap').returns({
+        getBounds: sinon.stub().returns(bounds)
       });
-      var repaintMarkers = sinon.stub();
-      main.__get__('map').repaintMarkers = repaintMarkers;
+      var repaintMarkers = sinon.stub(map, 'repaintMarkers');
 
       main.filterDatesChanged();
 
@@ -94,10 +91,9 @@ describe('photo_mapper', function () {
     });
 
     it('should not repaint the map markers if the filters are disabled in the UI', function () {
-      main.__set__('filtersAreVisible', sinon.stub().returns(false));
+      sinon.stub(ui, 'filtersAreVisible').returns(false);
 
-      var repaintMarkers = sinon.stub();
-      main.__get__('map').repaintMarkers = repaintMarkers;
+      var repaintMarkers = sinon.stub(map, 'repaintMarkers');
 
       main.filterDatesChanged();
 
@@ -203,7 +199,7 @@ describe('photo_mapper', function () {
       main.__get__('fs').writeFileSync = writeFile;
       main.__set__('config', config);
 
-      main.saveConfig();
+      main.__get__('saveConfig')();
 
       sinon.assert.calledWith(stringify, config);
       sinon.assert.calledWith(writeFile, main.__get__('configPath'), stringifyReturn);
@@ -215,41 +211,82 @@ describe('photo_mapper', function () {
       var latitude = 12;
       var longitude = 25;
       var zoom = 3;
-      main.__set__('map', {
-        getMap: sinon.stub().returns({
-          getZoom: function () {
-            return zoom;
-          },
-          getCenter: function () {
-            return {
-              lat: function () {
-                return latitude;
-              },
-              lng: function () {
-                return longitude;
-              }
+      sinon.stub(map, 'getMap').returns({
+        getZoom: function () {
+          return zoom;
+        },
+        getCenter: function () {
+          return {
+            lat: function () {
+              return latitude;
+            },
+            lng: function () {
+              return longitude;
             }
           }
-        })
+        }
       });
-      var stub = sinon.stub()
-      main.__set__('saveConfig', stub);
+      var saveConfig = sinon.stub();
+      main.__with__('saveConfig', saveConfig)(function () {
+        main.saveMapStartLocation();
 
-      main.saveMapStartLocation();
-
-      assert.strictEqual(main.__get__('config').map.centerLatitude, latitude);
-      assert.strictEqual(main.__get__('config').map.centerLongitude, longitude);
-      assert.strictEqual(main.__get__('config').map.zoom, zoom);
-      assert(stub.calledOnce);
+        assert.strictEqual(main.__get__('config').map.centerLatitude, latitude);
+        assert.strictEqual(main.__get__('config').map.centerLongitude, longitude);
+        assert.strictEqual(main.__get__('config').map.zoom, zoom);
+        assert(saveConfig.calledOnce);
+      });
     });
 
     it('should not update the config file if the map has not initialized', function () {
-      main.saveConfig = sinon.spy()
+      var saveConfig = sinon.spy(main.__get__('saveConfig'));
 
       main.__set__('googleMap', null);
       main.saveMapStartLocation();
 
-      assert.strictEqual(main.saveConfig.called, false);
+      assert.strictEqual(saveConfig.called, false);
+    });
+  });
+
+  describe('#saveSelectedDatabase', function () {
+    it('should save the path of the selected database to the configuration file', function () {
+      var databasePath = '/foo/bar'
+      var saveConfig = sinon.stub();
+      main.__set__('config', main.__get__('configDefaults'));
+      sinon.stub(map, 'createMarkersFromPhotos');
+      sinon.stub(map, 'repaintMarkers');
+      var Photo = sinon.stub(model, 'Photo');
+      Photo.findAll = sinon.stub();
+      sinon.stub(map, 'getMap').returns({
+        getBounds: sinon.stub()
+      });
+      sinon.stub(ui, 'getDateFilterStart');
+      sinon.stub(ui, 'getDateFilterEnd');
+
+      main.__with__('saveConfig', saveConfig)(function () {
+        return main.saveSelectedDatabase(databasePath).then(function () {
+          assert.deepStrictEqual(main.__get__('config').database.path, databasePath);
+          assert(saveConfig.called);
+        });
+      });
+    });
+
+    it('should draw markers on the map for the photos in the selected database', function () {
+      var createMarkers = sinon.stub(map, 'createMarkersFromPhotos');
+      var repaintMarkers = sinon.stub(map, 'repaintMarkers');
+      var Photo = sinon.stub(model, 'Photo');
+      Photo.findAll = sinon.stub().resolves(['foo'])
+      sinon.stub(map, 'getMap').returns({
+        getBounds: sinon.stub()
+      });
+      sinon.stub(ui, 'getDateFilterStart');
+      sinon.stub(ui, 'getDateFilterEnd');
+
+      main.__with__('saveConfig', sinon.stub())(function () {
+        return main.saveSelectedDatabase('foo').then(function () {
+          assert(createMarkers.calledOnce);
+          assert(repaintMarkers.calledOnce);
+        });
+      });
     });
   });
 });
