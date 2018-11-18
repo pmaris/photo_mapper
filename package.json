@@ -3,11 +3,11 @@
   "version": "0.0.1",
   "main": "main.js",
   "dependencies": {
+    "@fancyapps/fancybox": "^3.5.2",
     "electron": "^3.0.9",
     "exif-parser": "^0.1.12",
-    "fancybox": "^3.0.0",
     "google-maps": "^3.2.1",
-    "jquery": "2.2.4",
+    "jquery": "^3.3.1",
     "jquery-ui-bundle": "1.12.1",
     "marker-clusterer-plus": "^2.1.4",
     "sequelize": "^4.40.0",

@@ -3,20 +3,13 @@ var $ = global.jQuery;
 require('jquery-ui-bundle');
 var fs = require('fs');
 var path = require('path');
-require(path.join(__dirname, '../node_modules/fancybox/dist/js/jquery.fancybox.pack.js'));
-require(path.join(__dirname, '../node_modules/fancybox/dist/helpers/js/jquery.fancybox-thumbs.js'));
+require(path.join(__dirname, '../node_modules/@fancyapps/fancybox/dist/jquery.fancybox.min.js'));
 var map = require(path.join(__dirname, 'map.js'));
 var model = require(path.join(__dirname, 'model.js'));
 var ui = require(path.join(__dirname, 'ui.js'));
 
 const fancyBoxOptions = {
-  padding: 5,
-  helpers: {
-    thumbs: {
-      height: 50,
-      width: 50
-    }
-  }
+  loop: false
 };
 const configPath = './config.json';
 var config = {};
@@ -49,8 +42,10 @@ function clusterClick (cluster) {
   var markers = [];
   for (var i = 0; i < cluster.getMarkers().length; i++) {
     markers.push({
-      href: cluster.getMarkers()[i].photo.path,
-      title: cluster.getMarkers()[i].photo.title
+      src: cluster.getMarkers()[i].photo.path,
+      opts: {
+        caption: cluster.getMarkers()[i].photo.title
+      }
     });
   }
   $.fancybox.open(markers, fancyBoxOptions);

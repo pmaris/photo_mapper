@@ -157,7 +157,12 @@ function getMapElement () {
 };
 
 function initializeFancybox () {
-  $('.fancybox').fancybox();
+  $('.fancybox').fancybox({
+    thumbs: {
+      autoStart: true,
+      axis: 'x'
+    }
+  });
 };
 
 function initializeFinder () {
@@ -171,8 +176,8 @@ function initializeFinder () {
 }
 
 function markerOnClick () {
-  $.fancybox.open({ href: this.photo.path, title: this.photo.title, padding: 5 });
-};
+  $.fancybox.open({ src: this.photo.path, opts: { caption: this.photo.title } });
+}
 
 /*
  * Open the modal for searching for geotagged photos.
