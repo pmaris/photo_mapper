@@ -1,4 +1,4 @@
-Electron desktop application for displaying the locations of geottaged photos on a Google map.
+Electron desktop application for displaying the locations of geotagged photos on a Google map.
 
 Features
 ========
