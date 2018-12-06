@@ -15,7 +15,8 @@ Windows dependencies for development
 ------------------------------------
 On Windows, you must have the Visual C++ build tools installed to build a project dependency:
 1. Download and run the Microsft Visual Studio installer
-2. Choose the specific components of the Visual Studio Build Tools to install, and select the `Visual C++ build tools` workload  and both the optional `Windows 8.1 SDK and UCRT SDK` and `VC++ toolset for dekstop` (The current version as of this writing is `VC++ 2015.3 v14.00 (v140)`)
+2. Choose the specific components of the Visual Studio Build Tools to install, and select the `Visual C++ build tools` workload  and both the optional `Windows 8.1 SDK and UCRT SDK` and `VC++ toolset for dekstop` (The current version as of this writing is `VC++ 2015.3 v14.00 (v140)`). You do not have to install Visual Studio itself.
+3. Create the environment variable `VCTargetsPath` with the value being the directory containing the `Microsoft.cpp.*` files. The default path for version 14 of the build tools should be `C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\v140`.
 
 Setting up the project for development
 --------------------------------------
