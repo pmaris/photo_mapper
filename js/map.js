@@ -1,12 +1,18 @@
 var fs = require('fs');
+var path = require('path');
+var $ = global.jQuery;
+require('jquery-ui-bundle');
+require(path.join(__dirname, '../node_modules/@fancyapps/fancybox/dist/jquery.fancybox.min.js'));
 var GoogleMapsLoader = require('google-maps');
 var MarkerClusterer = require('marker-clusterer-plus');
-var path = require('path');
 
 var google;
 var googleMap;
 var markerCluster;
 
+const fancyBoxOptions = {
+  loop: false
+};
 const markerClusterOptions = {
   photoPath: path.join(__dirname, '../icons/m'),
   zoomOnClick: false,
@@ -15,12 +21,46 @@ const markerClusterOptions = {
 };
 
 module.exports = {
+  createMarkerClusters: createMarkerClusters,
   createMarkersFromPhotos: createMarkersFromPhotos,
   getMap: getMap,
   initializeGoogleMapsLoader: initializeGoogleMapsLoader,
   repaintMarkers: repaintMarkers,
   setupMap: setupMap
 };
+
+/**
+ * Handler for when a cluster of markers on the map is clicked on to open all of
+ * the photos in the cluster with Fancybox.
+ * @param {MarkerCluster} cluster Cluster of markers on the map.
+ */
+function clusterClick (cluster) {
+  var markers = [];
+  for (var i = 0; i < cluster.getMarkers().length; i++) {
+    markers.push({
+      src: cluster.getMarkers()[i].photo.path,
+      opts: {
+        caption: cluster.getMarkers()[i].photo.title
+      }
+    });
+  }
+  $.fancybox.open(markers, fancyBoxOptions);
+}
+
+/**
+ * Create the marker clusters for the map.
+ * @param {google.maps.Marker[]} markers Google Map markers for all photos to
+ *                                       display on the map.
+ * @return {Promise} Resolves once the marker clusters have been created.
+ */
+function createMarkerClusters(markers) {
+  var promise = new Promise( function (resolve) {
+    markerCluster = new MarkerClusterer(googleMap, markers, markerClusterOptions);
+    google.maps.event.addListener(markerCluster, 'clusterclick', clusterClick);
+    resolve();
+  });
+  return promise;
+}
 
 /**
  * Create Google Maps markers for provided photos.
@@ -151,12 +191,10 @@ function repaintMarkers (mapBounds, startDate, endDate) {
  *                                            create the map with.
  * @param {google.maps.Marker[]} markers Google Map markers for all photos to
  *                                       display on the map.
- * @param {function} clusterClick Function to call when a cluster on the map is
- *                                clicked on.
  * @return {Promise} Resolves once the map has been setup. Rejects if
  *                   GoogleMapsLoader has not been initialized.
  */
-function setupMap (mapElement, mapOptions, markers, clusterClick) {
+function setupMap (mapElement, mapOptions, markers) {
   var promise = new Promise(function (resolve, reject) {
     if (!google) {
       reject(new Error('Google Maps Loader not initialized'));
@@ -164,15 +202,14 @@ function setupMap (mapElement, mapOptions, markers, clusterClick) {
     googleMap = new google.maps.Map(mapElement, mapOptions);
 
     console.log('Num markers: %s', markers.length);
-    markerCluster = new MarkerClusterer(googleMap, markers, markerClusterOptions);
-    google.maps.event.addListener(markerCluster, 'clusterclick', clusterClick);
-
-    // Update the markers on the map whenever the map is panned, zoomed, or when
-    // the map first loads
-    googleMap.addListener('tilesloaded', function () {
-      repaintMarkers(googleMap.getBounds(), null, null);
+    createMarkerClusters(markers, clusterClick).then( function () {
+      // Update the markers on the map whenever the map is panned, zoomed, or when
+      // the map first loads
+      googleMap.addListener('tilesloaded', function () {
+        repaintMarkers(googleMap.getBounds(), null, null);
+      });
+      resolve();
     });
-    resolve();
+    return promise;
   });
-  return promise;
 }

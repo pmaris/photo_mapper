@@ -307,6 +307,7 @@ function startPhotoFinder (folderPath, fileExtensions, updatePhotos) {
  */
 function saveGeotaggedPhotos (geotaggedPhotos) {
   model.Photo.bulkCreate(geotaggedPhotos, { ignoreDuplicates: true });
-  map.createMarkersFromPhotos(geotaggedPhotos, markerOnClick);
-  map.repaintMarkers(map.getMap().getBounds(), getDateFilterStart(), getDateFilterEnd());
+  map.createMarkersFromPhotos(geotaggedPhotos, markerOnClick).then(markers => {
+    map.createMarkerClusters(markers);
+  });
 }

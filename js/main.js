@@ -1,16 +1,10 @@
 global.jQuery = require('jquery');
-var $ = global.jQuery;
-require('jquery-ui-bundle');
 var fs = require('fs');
 var path = require('path');
-require(path.join(__dirname, '../node_modules/@fancyapps/fancybox/dist/jquery.fancybox.min.js'));
 var map = require(path.join(__dirname, 'map.js'));
 var model = require(path.join(__dirname, 'model.js'));
 var ui = require(path.join(__dirname, 'ui.js'));
 
-const fancyBoxOptions = {
-  loop: false
-};
 const configPath = path.join(__dirname, '../config.json');
 var config = {};
 const configDefaults = {
@@ -22,30 +16,11 @@ const configDefaults = {
 };
 
 module.exports = {
-  clusterClick: clusterClick,
   filterDatesChanged: filterDatesChanged,
   initialize: initialize,
   loadConfig: loadConfig,
   saveMapStartLocation: saveMapStartLocation
 };
-
-/**
- * Handler for when a cluster of markers on the map is clicked on to open all of
- * the photos in the cluster with Fancybox.
- * @param {MarkerCluster} cluster Cluster of markers on the map.
- */
-function clusterClick (cluster) {
-  var markers = [];
-  for (var i = 0; i < cluster.getMarkers().length; i++) {
-    markers.push({
-      src: cluster.getMarkers()[i].photo.path,
-      opts: {
-        caption: cluster.getMarkers()[i].photo.title
-      }
-    });
-  }
-  $.fancybox.open(markers, fancyBoxOptions);
-}
 
 /*
  * Handler for when the dates to filter photos by have changed, to repaint the
@@ -90,7 +65,7 @@ function initialize () {
               lng: config.map.centerLongitude
             },
             zoom: config.map.zoom
-          }, markers, clusterClick);
+          }, markers);
           resolve();
         });
       });
