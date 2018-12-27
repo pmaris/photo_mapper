@@ -9,7 +9,6 @@
     <body>
             <div id="button-bar">
                 <input type="image" src="icons/home.png" class="button" onclick="ui.confirmSaveMapStartLocation(main.saveMapStartLocation)" title="Save the current view of the map as the default when the application starts" />
-                <input type="image" src="icons/database.png" class="button" onclick="ui.selectDatabase(main.saveSelectedDatabase)" title="Select a database containing geotagged photos" />
                 <input type="image" src="icons/search.png" class="button" onclick="ui.openFindPhotosModal()" title="Search your computer for geotagged photos" />
                 <!--<input type="image" src="icons/x_pin.png" class="button" onclick="" title="Search your computer for photos that have not been geotagged" />-->
                 <input type="image" src="icons/calendar.png" class="button" id="date-filter-enable-button" onclick="jQuery('#date-filter').toggle()" title="Filter photos shown on the map by the date they were taken" />
@@ -34,7 +33,6 @@
                     <br />
                     Separate multiple file types with spaces. Periods are not required.
                 </p>
-                <!--<input id="delete-photos-checkbox" type="checkbox">Delete existing photos in the database</input>-->
                 <p id="no-folder-selected" hidden>
                     You must select a folder to search for geotagged photos
                 </p>

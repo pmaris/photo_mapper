@@ -16,7 +16,6 @@ module.exports = {
   initializeFancybox: initializeFancybox,
   initializeFinder: initializeFinder,
   markerOnClick: markerOnClick,
-  selectDatabase: selectDatabase,
   selectFolder: selectFolder,
   updateProgressBar: updateProgressBar
 }
@@ -215,29 +214,6 @@ function openFindPhotosModal () {
       }
     ]
   });
-}
-
-/**
- * Open file dialog to choose the database file containing geotags.
- * @param {function} saveFunction Function to call after a database has been
- *                                selected, to save the new database as the
- *                                application's database.
- */
-function selectDatabase (saveFunction) {
-  var options = {
-    title: 'Select geotags database',
-    defaultPath: 'geotags.db',
-    filters: [
-      { name: 'Databases', extensions: ['db', 'sqlite', 'sqlite3'] },
-      { name: 'All Files', extensions: ['*'] }
-    ],
-    properties: ['openFile']
-  };
-  var files = dialog.showOpenDialog(options);
-
-  if (files) {
-    saveFunction(files[0]);
-  }
 }
 
 /*

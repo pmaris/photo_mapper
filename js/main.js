@@ -18,9 +18,6 @@ const configDefaults = {
     centerLatitude: 37,
     centerLongitude: -122,
     zoom: 10
-  },
-  database: {
-    path: path.join(__dirname, '../geotags.db')
   }
 };
 
@@ -29,8 +26,7 @@ module.exports = {
   filterDatesChanged: filterDatesChanged,
   initialize: initialize,
   loadConfig: loadConfig,
-  saveMapStartLocation: saveMapStartLocation,
-  saveSelectedDatabase: saveSelectedDatabase
+  saveMapStartLocation: saveMapStartLocation
 };
 
 /**
@@ -162,23 +158,4 @@ function saveMapStartLocation () {
     config.map.zoom = googleMap.getZoom();
     saveConfig();
   }
-}
-
-/**
- * Save the selected database file to the application's configuration file, and
- * display the photos in that database on the map.
- * @param {string} databasePath Absolute path to the selected database.
- */
-function saveSelectedDatabase (databasePath) {
-  var promise = new Promise(function (resolve) {
-    config.database.path = databasePath;
-    saveConfig();
-
-    model.Photo.findAll().then(photos => {
-      map.createMarkersFromPhotos(photos, ui.markerOnClick);
-      map.repaintMarkers(map.getMap().getBounds(), ui.getDateFilterStart(), ui.getDateFilterEnd());
-      resolve();
-    });
-  })
-  return promise;
 }
