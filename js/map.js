@@ -8,7 +8,7 @@ var googleMap;
 var markerCluster;
 
 const markerClusterOptions = {
-  photoPath: './icons/m',
+  photoPath: path.join(__dirname, '../icons/m'),
   zoomOnClick: false,
   ignoreHidden: true,
   gridSize: 70
@@ -91,7 +91,7 @@ function getMap () {
  */
 function initializeGoogleMapsLoader () {
   var promise = new Promise(function (resolve, reject) {
-    fs.readFile('./google_maps.key', function (err, data) {
+    fs.readFile(path.join(__dirname, '../google_maps.key'), function (err, data) {
       if (err) {
         reject(new Error('An error ocurred when reading the google maps API key file: ' + err.message));
       } else {

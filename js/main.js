@@ -11,7 +11,7 @@ var ui = require(path.join(__dirname, 'ui.js'));
 const fancyBoxOptions = {
   loop: false
 };
-const configPath = './config.json';
+const configPath = path.join(__dirname, '../config.json');
 var config = {};
 const configDefaults = {
   map: {
@@ -20,7 +20,7 @@ const configDefaults = {
     zoom: 10
   },
   database: {
-    path: './geotags.db'
+    path: path.join(__dirname, '../geotags.db')
   }
 };
 
