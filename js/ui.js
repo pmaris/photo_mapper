@@ -1,6 +1,6 @@
 global.jQuery = require('jquery');
 var $ = global.jQuery;
-const dialog = require('electron').remote.dialog;
+const { dialog } = require('electron');
 var path = require('path');
 var geotagFinder = require(path.join(__dirname, 'geotag_finder.js'));
 var map = require(path.join(__dirname, 'map.js'));

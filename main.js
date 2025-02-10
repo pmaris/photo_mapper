@@ -8,7 +8,11 @@ let win
 
 function createWindow () {
   // Create the browser window.
-  win = new BrowserWindow({icon: './icons/map.png'})
+  win = new BrowserWindow({icon: './icons/map.png',
+    webPreferences: {
+    nodeIntegration: true,
+    contextIsolation: false,
+  }})
   win.maximize(true);
 
 
