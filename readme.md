@@ -34,6 +34,7 @@ Unit tests for the application are written using Mocha.
 
 Run the tests with the command:
 `npm test`
+
 Screenshots
 ===========
 ![Map view, showing clustering of photos](https://raw.githubusercontent.com/pmaris/photo_mapper/master/screenshots/overview.png "Map view, showing clustering of photos")
