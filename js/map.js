@@ -21,6 +21,7 @@ const markerClusterOptions = {
 };
 
 module.exports = {
+  clusterClick: clusterClick,
   createMarkerClusters: createMarkerClusters,
   createMarkersFromPhotos: createMarkersFromPhotos,
   getMap: getMap,

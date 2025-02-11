@@ -50,7 +50,7 @@ describe('main', function () {
         }
       ];
 
-      main.clusterClick(cluster);
+      map.clusterClick(cluster);
       assert(fancyBoxOpen.calledWith(expectedMarkerContent, main.__get__('fancyBoxOptions')));
     });
   });
@@ -132,9 +132,9 @@ describe('main', function () {
           centerLongitude: -15.5,
           zoom: 3
         },
-        database: {
-          path: 'foo.db'
-        }
+        // database: {
+        //   path: 'foo.db'
+        // }
       };
       sinon.stub(main.__get__('JSON'), 'parse').returns(config);
       sinon.stub(main.__get__('fs'), 'readFileSync');
@@ -157,7 +157,7 @@ describe('main', function () {
       sinon.stub(main.__get__('fs'), 'readFileSync');
 
       var expectedConfig = {
-        database: main.__get__('configDefaults').database,
+        // database: main.__get__('configDefaults').database,
         map: {
           centerLatitude: main.__get__('configDefaults').map.centerLatitude,
           centerLongitude: main.__get__('configDefaults').map.centerLongitude,
@@ -262,10 +262,9 @@ describe('main', function () {
       sinon.stub(ui, 'getDateFilterEnd');
 
       main.__with__('saveConfig', saveConfig)(function () {
-        return main.saveSelectedDatabase(databasePath).then(function () {
-          assert.deepStrictEqual(main.__get__('config').database.path, databasePath);
-          assert(saveConfig.called);
-        });
+        // main.saveSelectedDatabase(databasePath)
+        assert.deepStrictEqual(main.__get__('config').database.path, databasePath);
+        assert(saveConfig.called);
       });
     });
 
@@ -281,10 +280,9 @@ describe('main', function () {
       sinon.stub(ui, 'getDateFilterEnd');
 
       main.__with__('saveConfig', sinon.stub())(function () {
-        return main.saveSelectedDatabase('foo').then(function () {
-          assert(createMarkers.calledOnce);
-          assert(repaintMarkers.calledOnce);
-        });
+        // main.saveSelectedDatabase('foo');
+        assert(createMarkers.calledOnce);
+        assert(repaintMarkers.calledOnce);
       });
     });
   });

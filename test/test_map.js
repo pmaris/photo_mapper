@@ -355,10 +355,9 @@ describe('map', function () {
         zoom: 12
       }
 
-      return map.setupMap(mapElement, mapOptions, [], function () {}).then(function () {
-        assert.strictEqual(map.__get__('googleMap'), googleMap);
-        assert(Map.calledOnceWith(mapElement, mapOptions));
-      });
+      map.setupMap(mapElement, mapOptions, [], function () {})
+      assert.strictEqual(map.__get__('googleMap'), googleMap);
+      assert(Map.calledOnceWith(mapElement, mapOptions));
     });
 
     it('should create a marker clusterer for the map markers', function () {
@@ -379,9 +378,8 @@ describe('map', function () {
 
       var MarkerClusterer = sinon.stub();
       map.__set__('MarkerClusterer', MarkerClusterer);
-      return map.setupMap({}, {}, markers, function () {}).then(function () {
-        MarkerClusterer.calledOnceWith(markers, map.__get__('googleMap'), map.__get__('markerClusterOptions'));
-      });
+      map.setupMap({}, {}, markers, function () {})
+      MarkerClusterer.calledOnceWith(markers, map.__get__('googleMap'), map.__get__('markerClusterOptions'));
     });
 
     it('should draw the markers on the map once the map loads', function () {
@@ -407,9 +405,8 @@ describe('map', function () {
 
       var MarkerClusterer = sinon.stub();
       map.__set__('MarkerClusterer', MarkerClusterer);
-      return map.setupMap({}, {}, markers, function () {}).then(function () {
-        addListener.calledOnceWith(MarkerClusterer, markers, googleMap.getBounds(), null, null);
-      });
+      map.setupMap({}, {}, markers, function () {})
+      addListener.calledOnceWith(MarkerClusterer, markers, googleMap.getBounds(), null, null);
     });
   });
 });
