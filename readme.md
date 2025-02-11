@@ -20,7 +20,7 @@ On Windows, you must have the Visual C++ build tools installed to build a projec
 
 Setting up the project for development
 --------------------------------------
-1. Install `nodejs` version `10.0` or higher
+1. Install `nodejs`
 2. Install `npm`
 3. Install dependencies using using the command `npm install <repository_location>`.
 4. Build the `sqlite3` package by running the command `npm run rebuild` in the root directory. On Windows, if you get an error like `The build tools for <version> (Platform Toolset = <version>) cannot be found`, you will need to use the `--msvs_version` flag to specify the version of the build tools you have installed.

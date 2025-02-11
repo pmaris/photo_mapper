@@ -4,6 +4,10 @@
   "authors": "Pierre Maris",
   "version": "0.0.1",
   "main": "main.js",
+  "engines" : { 
+    "npm" : "^10.9.2",
+    "node" : "^22.13.1"
+  },
   "dependencies": {
     "@fancyapps/fancybox": "^3.5.2",
     "electron-squirrel-startup": "^1.0.1",
