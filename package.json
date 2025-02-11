@@ -14,7 +14,7 @@
     "marker-clusterer-plus": "^2.1.4",
     "sequelize": "^6.37.5",
     "sqlite3": "^5.1.7",
-    "walk": "^2.3.14"
+    "walk": "^2.3.15"
   },
   "devDependencies": {
     "@electron-forge/maker-deb": "^7.6.1",
@@ -25,7 +25,7 @@
     "@electron-forge/plugin-fuses": "^7.6.1",
     "@electron/fuses": "^1.8.0",
     "electron": "34.1.1",
-    "electron-rebuild": "^1.8.2",
+    "electron-rebuild": "^3.2.9",
     "eslint": "^5.8.0",
     "eslint-config-standard": "^12.0.0",
     "eslint-plugin-import": "^2.14.0",
