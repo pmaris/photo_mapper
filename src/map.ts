@@ -6,7 +6,7 @@ import MarkerClusterer from "marker-clusterer-plus";
 
 var $ = global.jQuery;
 require('jquery-ui-bundle');
-require(join(__dirname, '../node_modules/@fancyapps/fancybox/dist/jquery.fancybox.min.js'));
+require(join(__dirname, '../../node_modules/@fancyapps/fancybox/dist/jquery.fancybox.min.js'));
 var GoogleMapsLoader = require('google-maps');
 
 var google: any;

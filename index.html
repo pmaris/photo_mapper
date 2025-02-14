@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <html>
     <head>
         <title>Photo mapper</title>
@@ -57,8 +58,8 @@
         </div>
         <script>
             var path = require('path');
-            var main = require(path.join(__dirname, 'dist', 'main.js'));
-            var ui = require(path.join(__dirname, 'dist', 'ui.js'));
+            var main = require(path.join(__dirname, 'dist', 'src', 'main.js'));
+            var ui = require(path.join(__dirname, 'dist', 'src', 'ui.js'));
             main.initialize();
           </script>
     </body>
