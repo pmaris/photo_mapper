@@ -1,27 +1,15 @@
+import { dialog } from "electron"
+
+import { getPhotoGeotags, getPhotoPaths } from "./geotag_finder"
+import { createMarkersFromPhotos, createMarkerClusters } from "./map"
+import { Photo } from "./model"
+import type { GeotaggedPhoto } from "./types"
+
 global.jQuery = require('jquery');
 var $ = global.jQuery;
-const { dialog } = require('electron');
-var path = require('path');
-var geotagFinder = require(path.join(__dirname, 'geotag_finder.js'));
-var map = require(path.join(__dirname, 'map.js'));
-var model = require(path.join(__dirname, 'model.js'));
 
-module.exports = {
-  confirmSaveMapStartLocation: confirmSaveMapStartLocation,
-  filtersAreVisible: filtersAreVisible,
-  getDateFilterEnd: getDateFilterEnd,
-  getDateFilterStart: getDateFilterStart,
-  getMapElement: getMapElement,
-  openFindPhotosModal: openFindPhotosModal,
-  initializeFancybox: initializeFancybox,
-  initializeFinder: initializeFinder,
-  markerOnClick: markerOnClick,
-  selectFolder: selectFolder,
-  updateProgressBar: updateProgressBar
-}
-
-var cancelFinder;
-var selectedFolder;
+var cancelFinder: boolean;
+var selectedFolder: string;
 
 function confirmCancelFinder () {
   var modal = $('#confirm-cancel-finder');
@@ -58,7 +46,7 @@ function confirmCancelFinder () {
  * @param {function} saveFunction Function to call to save the map start
  *                                location when the user clicks the OK button.
  */
-function confirmSaveMapStartLocation (saveFunction) {
+export function confirmSaveMapStartLocation (saveFunction: () => void) {
   var modal = $('#confirm-save-map');
   modal.dialog({
     autoOpen: true,
@@ -85,26 +73,26 @@ function confirmSaveMapStartLocation (saveFunction) {
   });
 }
 
-function filtersAreVisible () {
+export function filtersAreVisible (): boolean {
   return $('#date-filter').is(':visible');
 };
 
 /**
  * Update the UI and save the geotagged photos to the database once the geotag
  * finder has finished running.
- * @param {object[]} geotaggedPhotos Array of objects containing the details of
- *                                   the locations of geotagged photos that have
- *                                   been found. Each object has the following
- *                                   keys and values:
- *                                     path: Absolute path of the photo.
- *                                     latitude: The latitude of the location
- *                                       where the photo was taken.
- *                                     longitude: The longitude of the location
- *                                       where the photo was taken.
- *                                     create_time: Unix epoch timestamp of when
- *                                       the photo was taken.
+ * @param {GeotaggedPhoto[]} geotaggedPhotos Array of objects containing the details of
+ *                                           the locations of geotagged photos that have
+ *                                           been found. Each object has the following
+ *                                           keys and values:
+ *                                             path: Absolute path of the photo.
+ *                                             latitude: The latitude of the location
+ *                                               where the photo was taken.
+ *                                             longitude: The longitude of the location
+ *                                               where the photo was taken.
+ *                                             create_time: Unix epoch timestamp of when
+ *                                               the photo was taken.
  */
-function finishPhotoFinder (geotaggedPhotos) {
+function finishPhotoFinder (geotaggedPhotos: GeotaggedPhoto[]) {
   $('#progress-bar-label').text('Adding photos to database');
   saveGeotaggedPhotos(geotaggedPhotos);
   $('#finder-result').show();
@@ -121,7 +109,7 @@ function finishPhotoFinder (geotaggedPhotos) {
  * @return {number} Unix epoch timestamp of the ending day of the date filter
  *                  range, or null if the filter has not been set.
  */
-function getDateFilterEnd () {
+export function getDateFilterEnd (): number | null {
   var endDate = $('#filter-end-date')[0].value;
   if (endDate) {
     var end = new Date(endDate);
@@ -137,7 +125,7 @@ function getDateFilterEnd () {
  * @return {number} Unix epoch timestamp of the starting day of the date filter
  *                  range, or null if the filter has not been set.
  */
-function getDateFilterStart () {
+export function getDateFilterStart (): number | null {
   var startDate = $('#filter-begin-date')[0].value;
   if (startDate) {
     var start = new Date(startDate);
@@ -151,11 +139,11 @@ function getDateFilterStart () {
  * Retrieve the HTML element containing the Google Map.
  * @return {Element} The HTML element containing the Google Map.
  */
-function getMapElement () {
+export function getMapElement (): HTMLElement | null {
   return document.getElementById('map');
 };
 
-function initializeFancybox () {
+export function initializeFancybox () {
   $('.fancybox').fancybox({
     thumbs: {
       autoStart: true,
@@ -164,7 +152,7 @@ function initializeFancybox () {
   });
 };
 
-function initializeFinder () {
+export function initializeFinder () {
   $('#progress-bar-label').text('Counting photos');
   $('#finder-progress-bar').progressbar({
     value: false
@@ -174,14 +162,14 @@ function initializeFinder () {
   $('#close-finder-modal-button').hide()
 }
 
-function markerOnClick () {
+export function markerOnClick () {
   $.fancybox.open({ src: this.photo.path, opts: { caption: this.photo.title } });
 }
 
 /*
  * Open the modal for searching for geotagged photos.
  */
-function openFindPhotosModal () {
+export function openFindPhotosModal () {
   selectedFolder = null;
   $('#no-folder-selected').hide();
 
@@ -219,7 +207,7 @@ function openFindPhotosModal () {
 /*
  * Open the folder selector to select a folder to search for geotagged photos.
  */
-function selectFolder () {
+export function selectFolder () {
   var options = {
     title: 'Select photos folder',
     properties: ['openDirectory']
@@ -236,7 +224,7 @@ function selectFolder () {
  * @param {number} value The value to set for the progress bar.
  * @param {number} maxValue The maximum value to set for the progress bar.
  */
-function updateProgressBar (value, maxValue) {
+export function updateProgressBar (value: number, maxValue: number) {
   if (typeof value === 'number') {
     $('#finder-progress-bar').progressbar('option', 'value', value);
     $('#progress-bar-label').text(value + ' / ' + $('#finder-progress-bar').progressbar('option', 'max') + ' photos checked');
@@ -251,7 +239,7 @@ function updateProgressBar (value, maxValue) {
 /*
  * Run the geotagged photo finder.
  */
-function startPhotoFinder (folderPath, fileExtensions, updatePhotos) {
+function startPhotoFinder (folderPath: string, fileExtensions: string[]) {
   $('#find-photos-modal').dialog('destroy');
   var modal = $('#finder-progress-modal');
   modal.dialog({
@@ -285,8 +273,8 @@ function startPhotoFinder (folderPath, fileExtensions, updatePhotos) {
   initializeFinder();
 
   cancelFinder = false;
-  geotagFinder.getPhotoPaths(folderPath, fileExtensions).then(photoPaths => {
-    geotagFinder.getPhotoGeotags(photoPaths, updateProgressBar, 100, finishPhotoFinder);
+  getPhotoPaths(folderPath, fileExtensions).then(photoPaths => {
+    getPhotoGeotags(photoPaths, updateProgressBar, 100, finishPhotoFinder);
   });
 }
 
@@ -306,8 +294,8 @@ function startPhotoFinder (folderPath, fileExtensions, updatePhotos) {
  *                                       the photo was taken.
  */
 function saveGeotaggedPhotos (geotaggedPhotos) {
-  model.Photo.bulkCreate(geotaggedPhotos, { ignoreDuplicates: true });
-  map.createMarkersFromPhotos(geotaggedPhotos, markerOnClick).then(markers => {
-    map.createMarkerClusters(markers);
+  Photo.bulkCreate(geotaggedPhotos, { ignoreDuplicates: true });
+  createMarkersFromPhotos(geotaggedPhotos, markerOnClick).then(markers => {
+    createMarkerClusters(markers);
   });
 }

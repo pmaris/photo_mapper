@@ -1,13 +1,16 @@
-global.jQuery = require('jquery');
-var fs = require('fs');
-var path = require('path');
-var map = require(path.join(__dirname, 'map.js'));
-var model = require(path.join(__dirname, 'model.js'));
-var ui = require(path.join(__dirname, 'ui.js'));
+import { readFileSync, writeFileSync } from "fs"
+import { join } from "path"
 
-const configPath = path.join(__dirname, '../config.json');
-var config = {};
-const configDefaults = {
+import { createMarkersFromPhotos, getMap, initializeGoogleMapsLoader, repaintMarkers, setupMap } from "./map"
+import { Photo } from "./model"
+import type { Config } from "./types"
+import { getDateFilterEnd, getDateFilterStart, filtersAreVisible, getMapElement, initializeFancybox, markerOnClick } from "./ui"
+
+global.jQuery = require('jquery');
+
+export const configPath = join(__dirname, '../config.json');
+export var config: Config = {};
+export const configDefaults: Config = {
   map: {
     centerLatitude: 37,
     centerLongitude: -122,
@@ -15,21 +18,14 @@ const configDefaults = {
   }
 };
 
-module.exports = {
-  filterDatesChanged: filterDatesChanged,
-  initialize: initialize,
-  loadConfig: loadConfig,
-  saveMapStartLocation: saveMapStartLocation
-};
-
 /*
  * Handler for when the dates to filter photos by have changed, to repaint the
  * markers on the map that should be visible with the current date filters.
  */
-function filterDatesChanged () {
-  if (ui.filtersAreVisible()) {
-    var filterStartTimestamp = ui.getDateFilterStart();
-    var filterEndTimestamp = ui.getDateFilterEnd();
+export function filterDatesChanged () {
+  if (filtersAreVisible()) {
+    var filterStartTimestamp = getDateFilterStart();
+    var filterEndTimestamp = getDateFilterEnd();
 
     if (!filterStartTimestamp) {
       filterStartTimestamp = Number.MIN_VALUE;
@@ -42,7 +38,7 @@ function filterDatesChanged () {
     console.log('Start timestamp: %s', filterStartTimestamp);
     console.log('End timestamp: %s', filterEndTimestamp);
 
-    map.repaintMarkers(map.getMap().getBounds(), filterStartTimestamp, filterEndTimestamp);
+    repaintMarkers(getMap().getBounds(), filterStartTimestamp, filterEndTimestamp);
   }
 }
 
@@ -52,21 +48,21 @@ function filterDatesChanged () {
  * photos from the database, and creating the map, with the photos from the
  * database as markers.
  */
-function initialize () {
-  var promise = new Promise(function (resolve, reject) {
-    ui.initializeFancybox();
+export function initialize (): Promise<null> {
+  var promise: Promise<null> = new Promise(function (resolve, reject) {
+    initializeFancybox();
     config = loadConfig(configPath);
-    model.Photo.findAll().then(function (photos) {
-      map.initializeGoogleMapsLoader().then(function () {
-        map.createMarkersFromPhotos(photos, ui.markerOnClick).then(markers => {
-          map.setupMap(ui.getMapElement(), {
+    Photo.findAll().then(function (photos: typeof Photo[]) {
+      initializeGoogleMapsLoader().then(function () {
+        createMarkersFromPhotos(photos, markerOnClick).then((markers: google.maps.Marker[]) => {
+          setupMap(getMapElement(), {
             center: {
               lat: config.map.centerLatitude,
               lng: config.map.centerLongitude
             },
             zoom: config.map.zoom
           }, markers);
-          resolve();
+          resolve(null);
         });
       });
     });
@@ -80,9 +76,9 @@ function initialize () {
  *                         file.
  * @return {object} Application configuration.
  */
-function loadConfig (configPath) {
+export function loadConfig (configPath: string): Config {
   try {
-    var loadedConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    var loadedConfig = JSON.parse(readFileSync(configPath, 'utf-8'));
     console.log('Loaded configuration from JSON file: ' + JSON.stringify(loadedConfig));
 
     // Update any missing fields in the configuration object with default values
@@ -93,7 +89,7 @@ function loadConfig (configPath) {
   } catch (err) {
     console.error('Could not read configuration from config file, setting defaults');
     console.error(err);
-    config = JSON.parse(JSON.stringify(configDefaults));
+    config = configDefaults;
   }
 
   // If any numerical value is not a number, use the default value for that field
@@ -109,18 +105,19 @@ function loadConfig (configPath) {
 /*
  * Update the application's configuration file with the current values in the
  * configuration object.
+ * @param {Config} newConfig The new configuration to save
  */
-function saveConfig () {
+export function saveConfig (newConfig: Config) {
   console.log('Updating configuration file');
-  fs.writeFileSync(configPath, JSON.stringify(config));
+  writeFileSync(configPath, JSON.stringify(newConfig));
 }
 
 /*
  * Update the starting location for the map in the application's configuration
  * file.
  */
-function saveMapStartLocation () {
-  var googleMap = map.getMap();
+export function saveMapStartLocation () {
+  var googleMap = getMap();
   if (googleMap) {
     console.log('Updating map start location');
 
@@ -131,6 +128,6 @@ function saveMapStartLocation () {
     config.map.centerLatitude = googleMap.getCenter().lat();
     config.map.centerLongitude = googleMap.getCenter().lng();
     config.map.zoom = googleMap.getZoom();
-    saveConfig();
+    saveConfig(config);
   }
 }

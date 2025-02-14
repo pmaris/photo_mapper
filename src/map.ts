@@ -1,33 +1,26 @@
-var fs = require('fs');
-var path = require('path');
+import { readFile } from "fs"
+import { basename, extname, join } from "path"
+import { Photo } from "./model";
+
+import MarkerClusterer from "marker-clusterer-plus";
+
 var $ = global.jQuery;
 require('jquery-ui-bundle');
-require(path.join(__dirname, '../node_modules/@fancyapps/fancybox/dist/jquery.fancybox.min.js'));
+require(join(__dirname, '../node_modules/@fancyapps/fancybox/dist/jquery.fancybox.min.js'));
 var GoogleMapsLoader = require('google-maps');
-var MarkerClusterer = require('marker-clusterer-plus');
 
-var google;
-var googleMap;
-var markerCluster;
+var google: any;
+var googleMap: google.maps.Map;
+var markerCluster: typeof MarkerClusterer;
 
 const fancyBoxOptions = {
   loop: false
 };
 const markerClusterOptions = {
-  photoPath: path.join(__dirname, '../icons/m'),
+  photoPath: join(__dirname, '../icons/m'),
   zoomOnClick: false,
   ignoreHidden: true,
   gridSize: 70
-};
-
-module.exports = {
-  clusterClick: clusterClick,
-  createMarkerClusters: createMarkerClusters,
-  createMarkersFromPhotos: createMarkersFromPhotos,
-  getMap: getMap,
-  initializeGoogleMapsLoader: initializeGoogleMapsLoader,
-  repaintMarkers: repaintMarkers,
-  setupMap: setupMap
 };
 
 /**
@@ -35,7 +28,7 @@ module.exports = {
  * the photos in the cluster with Fancybox.
  * @param {MarkerCluster} cluster Cluster of markers on the map.
  */
-function clusterClick (cluster) {
+export function clusterClick (cluster: typeof markerCluster) {
   var markers = [];
   for (var i = 0; i < cluster.getMarkers().length; i++) {
     markers.push({
@@ -54,11 +47,11 @@ function clusterClick (cluster) {
  *                                       display on the map.
  * @return {Promise} Resolves once the marker clusters have been created.
  */
-function createMarkerClusters(markers) {
-  var promise = new Promise( function (resolve) {
+export function createMarkerClusters(markers: google.maps.Marker[]): Promise<null> {
+  var promise: Promise<null> = new Promise( function (resolve) {
     markerCluster = new MarkerClusterer(googleMap, markers, markerClusterOptions);
     google.maps.event.addListener(markerCluster, 'clusterclick', clusterClick);
-    resolve();
+    resolve(null);
   });
   return promise;
 }
@@ -85,9 +78,9 @@ function createMarkerClusters(markers) {
  *                     createTime: Unix timestamp representing the time the
  *                       photo was taken.
  */
-function createMarkersFromPhotos (photos, onClick) {
+export function createMarkersFromPhotos (photos: typeof Photo[], onClick: () => void) {
   var promise = new Promise(function (resolve, reject) {
-    var markers = [];
+    var markers: google.maps.Marker[] = [];
     for (var i = 0; i < photos.length; i++) {
       var marker = new google.maps.Marker({
         position: {
@@ -99,7 +92,7 @@ function createMarkersFromPhotos (photos, onClick) {
       // Store attributes of photo with the marker, for display on the map
       marker.photo = {
         path: photos[i].path,
-        title: path.basename(photos[i].path, path.extname(photos[i].path)),
+        title: basename(photos[i].path, extname(photos[i].path)),
         createTime: photos[i].create_time
       };
 
@@ -117,7 +110,7 @@ function createMarkersFromPhotos (photos, onClick) {
  *                           undefined if the method is called before the map
  *                           has been initialized.
  */
-function getMap () {
+export function getMap () {
   return googleMap;
 }
 
@@ -130,16 +123,16 @@ function getMap () {
  *                   global google variable has been set. Rejects if the
  *                   Google Maps key file cannot be read.
  */
-function initializeGoogleMapsLoader () {
-  var promise = new Promise(function (resolve, reject) {
-    fs.readFile(path.join(__dirname, '../google_maps.key'), function (err, data) {
+export function initializeGoogleMapsLoader (): Promise<null> {
+  var promise: Promise<null> = new Promise(function (resolve, reject) {
+    readFile(join(__dirname, '../google_maps.key'), function (err, data) {
       if (err) {
         reject(new Error('An error ocurred when reading the google maps API key file: ' + err.message));
       } else {
         GoogleMapsLoader.KEY = String(data);
         GoogleMapsLoader.load(function (googleObj) {
           google = googleObj;
-          resolve();
+          resolve(null);
         });
       }
     });
@@ -158,7 +151,7 @@ function initializeGoogleMapsLoader () {
  *                         range, or null if no end date filter should be
  *                         applied.
  */
-function repaintMarkers (mapBounds, startDate, endDate) {
+export function repaintMarkers (mapBounds: google.maps.LatLngBounds, startDate: number, endDate: number) {
   console.log('Repainting markers');
 
   if (!startDate) {
@@ -195,7 +188,7 @@ function repaintMarkers (mapBounds, startDate, endDate) {
  * @return {Promise} Resolves once the map has been setup. Rejects if
  *                   GoogleMapsLoader has not been initialized.
  */
-function setupMap (mapElement, mapOptions, markers) {
+export function setupMap (mapElement: Element, mapOptions: google.maps.MapOptions, markers: google.maps.Marker[]) {
   var promise = new Promise(function (resolve, reject) {
     if (!google) {
       reject(new Error('Google Maps Loader not initialized'));
@@ -203,13 +196,13 @@ function setupMap (mapElement, mapOptions, markers) {
     googleMap = new google.maps.Map(mapElement, mapOptions);
 
     console.log('Num markers: %s', markers.length);
-    createMarkerClusters(markers, clusterClick).then( function () {
+    createMarkerClusters(markers).then( function () {
       // Update the markers on the map whenever the map is panned, zoomed, or when
       // the map first loads
       googleMap.addListener('tilesloaded', function () {
         repaintMarkers(googleMap.getBounds(), null, null);
       });
-      resolve();
+      resolve(null);
     });
     return promise;
   });

@@ -97,3 +97,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+out/
+dist/

@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "checkJs": true,
+        "module": "nodenext",
+        "outDir": "dist",
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "sourceMap": false,
+        "verbatimModuleSyntax": false,
+    },
+    "include": ["src/**/*", "test"]
+}

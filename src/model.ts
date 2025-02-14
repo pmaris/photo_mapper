@@ -10,7 +10,7 @@ const sequelize = new Sequelize({
 // model
 sequelize.sync();
 
-const Photo = sequelize.define('photos', {
+export const Photo = sequelize.define('photos', {
   path: {
     type: Sequelize.STRING,
     primaryKey: true
@@ -21,7 +21,3 @@ const Photo = sequelize.define('photos', {
 });
 
 Photo.sync();
-
-module.exports = {
-  Photo: Photo
-};
