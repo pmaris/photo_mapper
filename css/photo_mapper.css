@@ -9,7 +9,7 @@ html, body {
   padding: 0;
 }
 
-#button-bar {
+#action-bar {
     background-color: #999;
     border-bottom: 1px solid black;
     height: 35px;

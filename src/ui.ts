@@ -12,7 +12,7 @@ var cancelFinder: boolean;
 var selectedFolder: string;
 
 function confirmCancelFinder () {
-  var modal = $('#confirm-cancel-finder');
+  var modal = $('#confirmation-modal');
   modal.dialog({
     autoOpen: true,
     modal: true,
@@ -47,7 +47,7 @@ function confirmCancelFinder () {
  *                                location when the user clicks the OK button.
  */
 export function confirmSaveMapStartLocation (saveFunction: () => void) {
-  var modal = $('#confirm-save-map');
+  var modal = $('#confirmation-modal');
   modal.dialog({
     autoOpen: true,
     modal: true,

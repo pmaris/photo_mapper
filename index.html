@@ -8,59 +8,15 @@
         <link rel="stylesheet" href="css/photo_mapper.css">
     </head>
     <body>
-            <div id="button-bar">
-                <input type="image" src="icons/home.png" class="button" onclick="ui.confirmSaveMapStartLocation(main.saveMapStartLocation)" title="Save the current view of the map as the default when the application starts" />
-                <input type="image" src="icons/search.png" class="button" onclick="ui.openFindPhotosModal()" title="Search your computer for geotagged photos" />
-                <!--<input type="image" src="icons/x_pin.png" class="button" onclick="" title="Search your computer for photos that have not been geotagged" />-->
-                <input type="image" src="icons/calendar.png" class="button" id="date-filter-enable-button" onclick="jQuery('#date-filter').toggle()" title="Filter photos shown on the map by the date they were taken" />
-                <span id="date-filter">
-                    Start date:
-                    <input type="date" id="filter-begin-date" onchange="main.filterDatesChanged()" />
-                    End date:
-                    <input type="date" id="filter-end-date" onchange="main.filterDatesChanged()" />
-                </span>
-            </div>
+            <div id="action-bar"></div>
             <div id="map"></div>
+            <div id="finder"></div>
+            <div id="confirmation-modal"></div>
 
-        <div id="find-photos-modal" title="Find geotagged photos" hidden>
-            <div id="select-options">
-                <div id="folder-select">
-                    <button id="select-folder-button" onclick="ui.selectFolder()">Select a folder</button>
-                    <input id="folder-path" type="text" readonly />
-                </div>
-                <p>
-                    Select file types to check:
-                    <input id="file-extensions" type="text" min="1" required="true" value="jpg jpeg" size="5"/>
-                    <br />
-                    Separate multiple file types with spaces. Periods are not required.
-                </p>
-                <p id="no-folder-selected" hidden>
-                    You must select a folder to search for geotagged photos
-                </p>
-            </div>
-        </div>
-        <div id="finder-progress-modal" hidden>
-            <div id="finder-progress-bar">
-                <div id="progress-bar-label">Counting photos...</div>
-            </div>
-            <p id="finder-result" hidden></p>
-            <button id="finderResultCloseButton" hidden>Close/button>
-        </div>
-        <div id="confirm-save-map" title="Save map view" hidden>
-            <p>
-                Do you want to make the current map view the default map view when the application starts?
-            </p>
-        </div>
-        <div id="confirm-cancel-finder" title="Cancel search for photos" hidden>
-            <p>
-                Do you want to cancel searching for geotagged photos?
-            </p>
-        </div>
-        <script>
-            var path = require('path');
-            var main = require(path.join(__dirname, 'dist', 'src', 'main.js'));
-            var ui = require(path.join(__dirname, 'dist', 'src', 'ui.js'));
-            main.initialize();
+            <script>
+                var path = require('path');
+                var main = require(path.join(__dirname, 'dist', 'src', 'main.js'));
+                main.initialize();
           </script>
     </body>
 </html>
