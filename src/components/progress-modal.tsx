@@ -1,6 +1,6 @@
 import React from "react"
 
-export function ProgressModal() {
+export default function ProgressModal() {
     return (
         <div id="progress-modal" hidden>
         <div id="finder-progress-bar">

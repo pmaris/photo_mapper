@@ -1,9 +1,8 @@
 import React from "react"
-import { createRoot } from "react-dom/client";
 
 import { selectFolder } from "../ui"
 
-export function Finder() {
+export default function Finder() {
     return (
         <div id="find-photos-modal" title="Find geotagged photos" hidden>
             <div id="select-options">
@@ -24,8 +23,3 @@ export function Finder() {
         </div>
     )
 }
-
-
-const domNode = document.getElementById('finder');
-const root = createRoot(domNode);
-root.render(<Finder />);

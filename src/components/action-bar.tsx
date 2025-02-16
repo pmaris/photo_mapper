@@ -1,10 +1,9 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
 
 import { filterDatesChanged, saveMapStartLocation } from '../main';
 import { confirmSaveMapStartLocation, openFindPhotosModal } from '../ui';
 
-export function ActionBar() {
+export default function ActionBar() {
     return (
         <div>
             <input type="image" src="icons/home.png" className="button" onClick={ () => { confirmSaveMapStartLocation(saveMapStartLocation) }} title="Save the current view of the map as the default when the application starts" />
@@ -19,7 +18,3 @@ export function ActionBar() {
         </div>
     )
 }
-
-const domNode = document.getElementById('action-bar');
-const root = createRoot(domNode);
-root.render(<ActionBar />);
