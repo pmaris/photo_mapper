@@ -3,12 +3,23 @@
         "jsx": "react",
         "allowJs": true,
         "checkJs": true,
-        "module": "nodenext",
+        // "module": "nodenext",
         "outDir": "dist",
         "removeComments": true,
         "preserveConstEnums": true,
-        "sourceMap": false,
+        "sourceMap": true,
         "verbatimModuleSyntax": false,
-    },
-    "include": ["src/**/*", "test"]
+        "target": "ES6",
+        "module": "commonjs",
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "noImplicitAny": true,
+        "baseUrl": ".",
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "paths": {
+          "*": ["node_modules/*"]
+        }
+      },
+    "include": ["src/**/*", "test", "main.ts"]
 }

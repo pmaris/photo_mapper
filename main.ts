@@ -1,6 +1,7 @@
-const {app, BrowserWindow} = require('electron')
-const path = require('path')
-const url = require('url')
+import { app, BrowserWindow } from "electron";
+
+declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
+declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -10,18 +11,12 @@ function createWindow () {
   // Create the browser window.
   win = new BrowserWindow({icon: './icons/map.png',
     webPreferences: {
-    nodeIntegration: true,
-    contextIsolation: false,
+      nodeIntegration: true,
+      preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY
   }})
   win.maximize(true);
 
-
-  // and load the index.html of the app.
-  win.loadURL(url.format({
-    pathname: path.join(__dirname, 'index.html'),
-    protocol: 'file:',
-    slashes: true
-  }))
+  win.loadURL(MAIN_WINDOW_WEBPACK_ENTRY)
 
   // Emitted when the window is closed.
   win.on('closed', () => {
@@ -35,7 +30,9 @@ function createWindow () {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
+app.whenReady().then(() => {
+  createWindow()
+})
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {

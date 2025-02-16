@@ -25,7 +25,7 @@ Setting up the project for development
 3. Install dependencies using using the command `npm install <repository_location>`.
 4. Build the `sqlite3` package by running the command `npm run rebuild` in the root directory. On Windows, if you get an error like `The build tools for <version> (Platform Toolset = <version>) cannot be found`, you will need to use the `--msvs_version` flag to specify the version of the build tools you have installed.
 5. Compile the TypeScript files: `npx tsc`
-6. Run the application using the command `/<repository_location>/node_modules/.bin/electron <repository_location>`
+6. Run the application using the command `npm start`
 
 Currently, the map works without a Google Maps API key. If this ever changes in the future, you will have to sign up for a Google Maps API key and then create the file `google_maps.key` in the repository's root directory, and then add your key to the file.
 
