@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "jsx": "react",
+        "jsx": "react-jsx",
         "allowJs": true,
         "checkJs": true,
         // "module": "nodenext",
@@ -9,7 +9,7 @@
         "preserveConstEnums": true,
         "sourceMap": true,
         "verbatimModuleSyntax": false,
-        "target": "ES6",
+        "target": "ESNext",
         "module": "commonjs",
         "skipLibCheck": true,
         "esModuleInterop": true,
@@ -17,9 +17,9 @@
         "baseUrl": ".",
         "moduleResolution": "node",
         "resolveJsonModule": true,
-        "paths": {
-          "*": ["node_modules/*"]
-        }
-      },
-    "include": ["src/**/*", "test", "main.ts"]
+        // "paths": {
+        //   "*": ["node_modules/*"]
+        // }
+    }
+    // "include": ["src/**/*", "test", "index.ts"]
 }

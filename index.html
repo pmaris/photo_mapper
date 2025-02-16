@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <html>
     <head>
         <title>Photo mapper</title>
@@ -8,15 +7,7 @@
         <link rel="stylesheet" href="css/photo_mapper.css">
     </head>
     <body>
-            <div id="action-bar"></div>
-            <div id="map"></div>
-            <div id="finder"></div>
-            <div id="confirmation-modal"></div>
-
-            <script>
-                var path = require('path');
-                var main = require(path.join(__dirname, 'dist', 'src', 'main.js'));
-                main.initialize();
-          </script>
+        <div id="root"></div>
+        <script type="module" src="/src/renderer.ts"></script>
     </body>
 </html>

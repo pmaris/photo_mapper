@@ -1,4 +1,3 @@
-import React from 'react';
 import ActionBar from './action-bar';
 
 declare global {
@@ -7,7 +6,7 @@ declare global {
     }
   }
 
-export default function App() {
+export default function Root() {
   return (
     <>
       <ActionBar />

@@ -98,6 +98,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Build paths
 out/
 dist/
-.webpack/
+.vite/
