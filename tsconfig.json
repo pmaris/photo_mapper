@@ -1,25 +1,20 @@
 {
     "compilerOptions": {
         "jsx": "react-jsx",
-        "allowJs": true,
         "checkJs": true,
-        // "module": "nodenext",
-        "outDir": "dist",
         "removeComments": true,
         "preserveConstEnums": true,
-        "sourceMap": true,
         "verbatimModuleSyntax": false,
         "target": "ESNext",
         "module": "commonjs",
+        "allowJs": true,
         "skipLibCheck": true,
         "esModuleInterop": true,
         "noImplicitAny": true,
+        "sourceMap": true,
         "baseUrl": ".",
+        "outDir": "dist",
         "moduleResolution": "node",
-        "resolveJsonModule": true,
-        // "paths": {
-        //   "*": ["node_modules/*"]
-        // }
+        "resolveJsonModule": true
     }
-    // "include": ["src/**/*", "test", "index.ts"]
 }
