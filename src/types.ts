@@ -1,11 +1,7 @@
 export type Config = {
-    map?: MapConfig
-}
-
-type MapConfig = {
-    centerLatitude?: number,
-    centerLongitude?: number,
-    zoom?: number
+    mapCenterLatitude?: number,
+    mapCenterLongitude?: number,
+    mapZoom?: number
 }
 
 export type GeotaggedPhoto = {

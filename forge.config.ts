@@ -10,6 +10,11 @@ import { FuseV1Options, FuseVersion } from '@electron/fuses';
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
+    extraResource: [
+      './config.json',
+      './google_maps.key',
+      './photos.db'
+    ],
   },
   rebuildConfig: {},
   makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],
@@ -23,6 +28,11 @@ const config: ForgeConfig = {
           entry: 'index.ts',
           config: 'vite.main.config.ts',
           target: 'main',
+        },
+        {
+          entry: 'src/preload.ts',
+          config: 'vite.preload.config.ts',
+          target: 'preload',
         },
       ],
       renderer: [
