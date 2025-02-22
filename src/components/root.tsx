@@ -1,4 +1,5 @@
 import ActionBar from './action-bar';
+import Map from './map'
 
 declare global {
     interface Window {
@@ -10,6 +11,7 @@ export default function Root() {
   return (
     <>
       <ActionBar />
+      <Map />
     </>
   );
 }
