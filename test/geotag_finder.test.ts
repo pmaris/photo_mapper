@@ -1,6 +1,6 @@
 import { resolve } from "path"
 import { GeotaggedPhoto } from "../src/types";
-import { getPhotoExif, getPhotoGeotags, getPhotoPaths, getSanitizedExtensions } from "../src/geotag_finder";
+import { getPhotoExif, getPhotoGeotags, getPhotoPaths, getSanitizedExtensions } from "../src/preload/geotag_finder";
 
 describe('geotag_finder', function () {
   describe('#getPhotoExif()', function () {
@@ -17,7 +17,7 @@ describe('geotag_finder', function () {
     });
 
     it('should return the EXIF metadata for an image', function () {
-      var exif = getPhotoExif(resolve(__dirname, 'data', 'image_with_exif.jpg'));
+      const exif = getPhotoExif(resolve(__dirname, 'data', 'image_with_exif.jpg'));
       expect(exif).not.toBeNull();
 
       // Test a subset of the fields in the returned EXIF data, specifically the
@@ -30,11 +30,11 @@ describe('geotag_finder', function () {
 
   describe('#getPhotoGeotags()', function () {
     it('should return the location details of geotagged photos', function (done) {
-      var photoPaths = [
+      const photoPaths = [
         resolve(__dirname, 'data', 'photos', 'a', 'c', 'c.jpg'),
         resolve(__dirname, 'data', 'photos', 'b', 'b.jpg')
       ];
-      var expectedResponse = [
+      const expectedResponse = [
         {
           create_time: 1503423638,
           latitude: 46.585755679985255,
@@ -49,7 +49,7 @@ describe('geotag_finder', function () {
         }
       ]
 
-      getPhotoGeotags(photoPaths, function () {}, 100, function (photos: GeotaggedPhoto[]) {
+      getPhotoGeotags(photoPaths, () => {}, 100, function (photos: GeotaggedPhoto[]) {
         expect(photos.sort()).toEqual(expectedResponse.sort());
         done();
       });
@@ -70,8 +70,8 @@ describe('geotag_finder', function () {
     });
 
     it('should update the progress callback function with the number of photos that have been read', function (done) {
-      var progressCallback = jest.fn(() => {});
-      var photoPaths = [
+      const progressCallback = jest.fn(() => {});
+      const photoPaths = [
         resolve(__dirname, 'data', 'image_with_exif.jpg'),
         resolve(__dirname, 'data', 'image_without_exif.jpg'),
         resolve(__dirname, 'data', 'image_without_geotags.jpg')

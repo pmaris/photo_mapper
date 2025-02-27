@@ -1,10 +1,9 @@
-import { closeSync, lstatSync, openSync, readSync} from "fs"
+import { exifParser } from 'exif-parser';
+import { closeSync, lstatSync, openSync, readSync, Stats} from "fs"
 import { extname, join } from "path"
 import { walk, type WalkStats } from "walk"
 
-import type { GeotaggedPhoto } from "./types";
-
-var exifParser = require('exif-parser');
+import type { GeotaggedPhoto } from "../types";
 
 /**
  * Retrieves the EXIF metadata of an image file.
@@ -16,10 +15,10 @@ var exifParser = require('exif-parser');
 export function getPhotoExif (photoPath: string) {
   console.log(photoPath);
   try {
-    var fd = openSync(photoPath, 'r');
+    const fd = openSync(photoPath, 'r');
     // EXIF metadata will always occur in the first 64KB of an image file, so
     // only that much of the file contents needs to be read
-    var buffer = Buffer.alloc(65535);
+    const buffer = Buffer.alloc(65535);
     readSync(fd, buffer, 0, buffer.length, 0);
     closeSync(fd);
     return exifParser.create(buffer).parse();
@@ -57,21 +56,22 @@ export function getPhotoExif (photoPath: string) {
  *                                photo was taken.
  */
 export function getPhotoGeotags (photoPaths: string[], progressCallback: (photosRead: number, totalPhotos: number) => void, chunkSize: number, callback: (photos: GeotaggedPhoto[]) => void) {
-  var index = 0;
-  var geotaggedPhotos: GeotaggedPhoto[] = [];
+  let index = 0;
+  const geotaggedPhotos: GeotaggedPhoto[] = [];
   /**
    * @param {string[]} photoPaths Absolute paths of photos to get the geotags of.
    */
   function work (photoPaths: string[]) {
-    var cnt = chunkSize;
+    let cnt = chunkSize;
     // TODO: Reimplement a way to cancel the finder
     while (cnt-- && index < photoPaths.length) {
       if (progressCallback) {
         progressCallback(index + 1, photoPaths.length);
       }
 
+      let exif;
       try {
-        var exif = getPhotoExif(photoPaths[index]);
+        exif = getPhotoExif(photoPaths[index]);
       } catch (err) {
         console.error('Error occurred while reading EXIF for photo ' + photoPaths[index] + ' ' + err);
       }
@@ -111,11 +111,10 @@ export function getPhotoGeotags (photoPaths: string[], progressCallback: (photos
  *                   baseDirectory cannot be read.
  */
 export function getPhotoPaths (baseDirectory: string, fileExtensions: string[]): Promise<string[]> {
-  console.log("Base directory: " + baseDirectory)
-  var promise: Promise<string[]> = new Promise(function (resolve, reject) {
-    console.log('before')
+  const promise: Promise<string[]> = new Promise(function (resolve, reject) {
+    let directoryStat = Stats;
     try {
-      var directoryStat = lstatSync(baseDirectory)
+      directoryStat = lstatSync(baseDirectory)
     }
     catch {
       reject(new Error(baseDirectory + ' does not exist'));
@@ -125,21 +124,22 @@ export function getPhotoPaths (baseDirectory: string, fileExtensions: string[]):
       reject(new Error(baseDirectory + ' is not a directory'));
     }
 
-    var files: string[] = [];
-    var sanitizedExtensions = getSanitizedExtensions(fileExtensions);
+    const files: string[] = [];
+    const sanitizedExtensions = getSanitizedExtensions(fileExtensions);
 
-    var walker = walk(baseDirectory);
-    walker.on('file', function (root, fileStats, next) {
-      var filePath = join(root, fileStats.name);
-      var extension = extname(filePath).toLowerCase().replace('.', '');
+    const walker = walk(baseDirectory);
+    walker.on('file', function (root: string, fileStats: WalkStats, next: () => void) {
+      const filePath = join(root, fileStats.name);
+      const extension = extname(filePath).toLowerCase().replace('.', '');
       if (sanitizedExtensions.indexOf(extension) !== -1) {
         files.push(filePath);
       }
       next();
     });
-    walker.on('errors', function (root: string, nodeStatsArray: WalkStats[], next) {
-      for (var nodeStats of nodeStatsArray) {
-        var nodePath = join(root, nodeStats.name);
+    walker.on('errors', function (root: string, nodeStatsArray: WalkStats[], next: () => void) {
+      let nodePath: string;
+      for (const nodeStats of nodeStatsArray) {
+        nodePath = join(root, nodeStats.name);
         console.error('Error occurred while reading  ' + nodePath + ': ' + nodeStats.error);
       }
       next();
@@ -158,7 +158,7 @@ export function getPhotoPaths (baseDirectory: string, fileExtensions: string[]):
  * @return {string[]} Sanitized array of file extensions.
  */
 export function getSanitizedExtensions (fileExtensions: string[]): string[] {
-  var sanitizedExtensions = fileExtensions.map(function (currentValue) {
+  const sanitizedExtensions = fileExtensions.map(function (currentValue) {
     return String(currentValue).toLowerCase().replace('.', '');
   });
   return sanitizedExtensions;
