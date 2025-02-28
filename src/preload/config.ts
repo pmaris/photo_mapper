@@ -1,6 +1,8 @@
-import { Config } from "./types";
+import { readFileSync, writeFileSync } from "fs";
+import { Config } from "../types";
 
 const configPath = 'config.json';
+const googleMapsKeyPath = 'google_maps.key';
 
 export const configDefaults = {
     mapCenterLatitude: 37.75,
@@ -8,11 +10,15 @@ export const configDefaults = {
     mapZoom: 10
   }
 
+export function getGoogleMapsApiKey () {
+    readFileSync(googleMapsKeyPath, 'utf-8');
+}
+
 export function loadConfig() {
     let config: Config;
 
     try {
-        const loadedConfig = JSON.parse(window.electronContext.readFile(configPath));
+        const loadedConfig = JSON.parse(readFileSync(configPath, 'utf-8'));
         console.log('Loaded configuration from JSON file: ' + JSON.stringify(loadedConfig));
         
         // Update any missing fields in the configuration object with default values
@@ -38,6 +44,6 @@ export function loadConfig() {
 
 export function saveConfig (newConfig: Config) {
     console.log('Updating configuration file');
-    window.electronContext.writeFile(configPath, JSON.stringify(newConfig));
+    writeFileSync(configPath, JSON.stringify(newConfig));
   }
   

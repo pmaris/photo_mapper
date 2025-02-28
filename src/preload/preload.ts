@@ -1,17 +1,24 @@
 import { contextBridge } from "electron";
-import { readFileSync, writeFileSync } from "fs";
-import { createDatabase, loadPhotos } from "./db";
+
+import { createDatabase, insertPhotos, loadPhotos } from "./db";
+import { Config, GeotaggedPhoto } from "../types";
+import { getGoogleMapsApiKey, loadConfig, saveConfig } from "./config";
 
 contextBridge.exposeInMainWorld('electronContext', {
-  readFile: (filePath: string) => {
-    return readFileSync(filePath, 'utf-8');
+  getGoogleMapsApiKey: () => {
+    return getGoogleMapsApiKey();
   },
-
-  writeFile: (content: string, filePath: string) => {
-    writeFileSync(filePath, content)
+  loadConfig: () => {
+    return loadConfig();
   },
   loadPhotos: () => {
-    return loadPhotos()
+    return loadPhotos();
+  },
+  insertPhotos: (photos: GeotaggedPhoto[]) => {
+    insertPhotos(photos)
+  },
+  saveConfig: (newConfig: Config) => {
+    saveConfig(newConfig);
   }
 })
 

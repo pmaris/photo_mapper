@@ -27,8 +27,8 @@ function markerOnClick(marker: Marker) {
 }
 
 function Map() {
-  const apiKey = window.electronContext.readFile('google_maps.key')
-  config = JSON.parse(window.electronContext.readFile('config.json'))
+  const apiKey = window.electronContext.getGoogleMapsApiKey();
+  config = window.electronContext.loadConfig();
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',

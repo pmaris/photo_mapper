@@ -1,18 +1,26 @@
 import { Config } from "../src/types";
-import { configDefaults, loadConfig, saveConfig } from "../src/config";
-
-let windowSpy: jest.SpyInstance;
-let readFile: jest.Mock;
-let writeFile: jest.Mock;
+import { configDefaults, loadConfig, saveConfig } from "../src/preload/config";
 
 let parse: jest.Mock;
 let stringify: jest.Mock;
 
+var readFileSync: jest.Mock;
+var writeFileSync: jest.Mock;
+
+jest.mock("fs", () => {
+  readFileSync = jest.fn(() => { return "" });
+  writeFileSync = jest.fn();
+
+  return {
+    readFileSync,
+    writeFileSync
+  }
+});
+
+
 beforeAll(() => {
   parse = jest.fn(() => { return {} });
   stringify = jest.fn(() => { return '{}' });
-  windowSpy = jest.spyOn(window, "window", "get");
-
 
   JSON.parse = parse;
   JSON.stringify = stringify;
@@ -20,17 +28,6 @@ beforeAll(() => {
 
 afterEach(() => {
   jest.resetAllMocks();
-});
-
-beforeEach(() => {
-    readFile = jest.fn();
-    writeFile = jest.fn();
-    windowSpy.mockImplementation(() => ({
-        electronContext: {
-          readFile: readFile,
-          writeFile: writeFile
-        }
-      }));
 });
 
 describe('config', function () {
@@ -47,7 +44,7 @@ describe('config', function () {
     });
 
     it('should return the default configuration if the configuration file cannot be read', function () {
-        readFile.mockImplementation(() => { throw new Error() });
+        readFileSync.mockImplementation(() => { throw new Error() });
 
         expect(loadConfig()).toEqual(configDefaults);
     });
@@ -92,7 +89,7 @@ describe('config', function () {
         saveConfig(config);
 
         expect(stringify).toHaveBeenCalledWith(config);
-        expect(writeFile).toHaveBeenCalledWith('config.json', stringifyReturn);
+        expect(writeFileSync).toHaveBeenCalledWith('config.json', stringifyReturn);
     });
   });
 });
