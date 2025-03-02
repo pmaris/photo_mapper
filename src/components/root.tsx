@@ -1,3 +1,4 @@
+import React from 'react';
 import ActionBar from './action-bar';
 import Map from './map'
 
@@ -8,10 +9,14 @@ declare global {
   }
 
 export default function Root() {
-  return (
-    <>
-      <ActionBar />
-      <Map />
-    </>
-  );
+    const [map, setMap] = React.useState(null)
+    
+    const config = window.electronContext.loadConfig();
+
+    return (
+        <>
+            <ActionBar map={map} config={config} />
+            <Map map={map} setMap={setMap} config={config} />
+        </>
+    );
 }

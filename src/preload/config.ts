@@ -11,7 +11,7 @@ export const configDefaults = {
   }
 
 export function getGoogleMapsApiKey () {
-    readFileSync(googleMapsKeyPath, 'utf-8');
+    return readFileSync(googleMapsKeyPath, 'utf-8');
 }
 
 export function loadConfig() {

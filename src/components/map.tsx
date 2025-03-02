@@ -19,32 +19,37 @@ const markerClusterOptions = {
 
 function clustererOnClick(cluster: Cluster) {
   console.log('cluster clicked')
-  console.log(cluster.getMarkers())
+  console.log(cluster.getMarkers().map((marker) => marker.key))
 }
 
 function markerOnClick(marker: Marker) {
   console.log('marker clicked')
 }
 
-function Map() {
+function Map({ map, setMap, config }: { map: google.maps.Map, setMap: (map: google.maps.Map) => void, config: Config}) {
   const apiKey = window.electronContext.getGoogleMapsApiKey();
-  config = window.electronContext.loadConfig();
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: apiKey,
   })
 
-  const [map, setMap] = React.useState(null)
   const [photos, setPhotos] = React.useState([])
   const [visiblePhotos, setVisiblePhotos] = React.useState([])
 
   const onLoad = React.useCallback(function callback(m: google.maps.Map) {
     setMap(m)
 
-    const loadedPhotos = window.electronContext.loadPhotos()
-    setPhotos(loadedPhotos)
-    setVisiblePhotos(loadedPhotos)
+    const loadedPhotos = window.electronContext.loadPhotos().slice(0, 1000)
+    setPhotos(loadedPhotos);
+    setVisiblePhotos(loadedPhotos);
+    
+    // const mapBounds = m.getBounds();
+    // console.log('bounds')
+    // console.log(mapBounds)
+    // setVisiblePhotos(loadedPhotos.filter((photo: GeotaggedPhoto) => {
+    //   mapBounds.contains({ lat: photo.latitude, lng: photo.longitude })
+    // }))
   }, [])
 
   const onUnmount = React.useCallback(function callback(_: google.maps.Map) {
@@ -54,6 +59,15 @@ function Map() {
   const onBoundsChanged = React.useCallback(function callback()  {
     console.log('repaint bounds')
     mapBounds = map.getBounds();
+ 
+    // const photo = photos[0];
+    // console.log(photo)
+    // console.log(mapBounds.contains({ lat: photo.latitude, lng: photo.longitude }))
+
+    // !!! CAUSES RE-RENDER
+    // setVisiblePhotos(photos.filter((photo: GeotaggedPhoto) => {
+    //   mapBounds.contains({ lat: photo.latitude, lng: photo.longitude })
+    // }))
 
     console.log('visible photo length after repaint: ' + visiblePhotos.length)
   }, [map])
@@ -69,9 +83,9 @@ function Map() {
     >
       <MarkerClusterer options={markerClusterOptions} onClick={ clustererOnClick }>
       {(clusterer) =>
-          visiblePhotos.map((photo, idx) => (
+          visiblePhotos.map((photo) => (
             <Marker
-              key={idx}
+              key={photo.path}
               position={{ lat: photo.latitude, lng: photo.longitude }}
               clusterer={clusterer}
               onClick={ markerOnClick }
