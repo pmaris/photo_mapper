@@ -15,31 +15,6 @@ html, body {
     height: 35px;
 }
 
-.button {
-    background-color: #CCC;
-    border-color: #AAA;
-    border-radius: 5px;
-    border-style: outset;
-    border-width: 1px;
-    height: 30px;
-    width: 30px;
-}
-
-#no-folder-selected {
-    color: #F00;
-}
-
-.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset .button-red {
-    background: red;
-    border: 1px solid black;
-}
-
-.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset .button-blue {
-    background: #0064cd;
-    color: white;
-    border: 1px solid black;
-}
-
-#folder-select {
-    width: 100%;
+.progress-bar {
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
 }

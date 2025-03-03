@@ -15,7 +15,7 @@ export function loadPhotos() {
     return db.prepare('SELECT * FROM photos').all() as GeotaggedPhoto[]
 }
 
-export function insertPhotos(photos: GeotaggedPhoto[]) {
+export function savePhotos(photos: GeotaggedPhoto[]) {
     const insert = db.prepare('INSERT INTO photos (path, latitude, longitude, create_time) VALUES (@path, @latitude, @longitude, @create_time) ON CONFLICT (path) DO NOTHING');
 
     const insertMany = db.transaction((photos) => {
@@ -23,4 +23,6 @@ export function insertPhotos(photos: GeotaggedPhoto[]) {
     });
 
     insertMany(photos);
+
+    console.log(loadPhotos());
 }

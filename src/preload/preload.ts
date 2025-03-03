@@ -1,14 +1,14 @@
-import { contextBridge, dialog as electronDialog } from "electron";
+import { contextBridge, ipcRenderer } from "electron";
 
-import { createDatabase, insertPhotos, loadPhotos } from "./db";
+import { createDatabase, savePhotos, loadPhotos } from "./db";
 import { Config, GeotaggedPhoto } from "../types";
 import { getPhotoGeotags, getPhotoPaths } from "./geotag_finder";
 import { getGoogleMapsApiKey, loadConfig, saveConfig } from "./config";
 
 contextBridge.exposeInMainWorld('electronContext', {
-  getGeotaggedPhotos: (directoryPath: string, fileExtensions: string[], progressCallback: (photosRead: number, totalPhotos: number) => void, abort: boolean) => {
+  getGeotaggedPhotos: (directoryPath: string, fileExtensions: string[], progressCallback: (photosRead: number, totalPhotos: number) => void, resultsCallback: (photos: GeotaggedPhoto[]) => void, abort: boolean) => {
     getPhotoPaths(directoryPath, fileExtensions).then(photoPaths => {
-      getPhotoGeotags(photoPaths, progressCallback, (photos: any) => { return }, abort);
+      getPhotoGeotags(photoPaths, progressCallback, resultsCallback, abort);
     });
   },
   getGoogleMapsApiKey: () => {
@@ -20,23 +20,13 @@ contextBridge.exposeInMainWorld('electronContext', {
   loadPhotos: () => {
     return loadPhotos();
   },
-  insertPhotos: (photos: GeotaggedPhoto[]) => {
-    insertPhotos(photos)
+  savePhotos: (photos: GeotaggedPhoto[]) => {
+    savePhotos(photos)
   },
   saveConfig: (newConfig: Config) => {
     saveConfig(newConfig);
   },
-  selectDirectory: () => {
-    console.log('dialog')
-    console.log(electronDialog)
-    console.log(window)
-    console.log(electronDialog.showOpenDialog({ properties: ['openFile', 'multiSelections'] }))
-    electronDialog.showOpenDialog({
-      properties: ['openDirectory']
-  }, function (files) {
-      if (files) console.log('selected-file', files[0]);
-  });
-  }
+  selectDirectory: () => ipcRenderer.invoke('dialog:selectDirectory'),
 })
 
 createDatabase()

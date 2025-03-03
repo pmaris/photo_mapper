@@ -1,9 +1,13 @@
-import { exifParser } from 'exif-parser';
-import { closeSync, lstatSync, openSync, readSync, Stats} from "fs"
+import { closeSync, lstatSync, openSync, readSync } from "fs"
 import { extname, join } from "path"
 import { walk, type WalkStats } from "walk"
 
 import type { GeotaggedPhoto } from "../types";
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const exifParser = require('exif-parser');
+
+const CHUNK_SIZE = 100;
 
 /**
  * Retrieves the EXIF metadata of an image file.
@@ -13,7 +17,7 @@ import type { GeotaggedPhoto } from "../types";
  *                  will be returned.
  */
 export function getPhotoExif (photoPath: string) {
-  console.log(photoPath);
+  // console.log(photoPath);
   try {
     const fd = openSync(photoPath, 'r');
     // EXIF metadata will always occur in the first 64KB of an image file, so
@@ -38,9 +42,6 @@ export function getPhotoExif (photoPath: string) {
  *                                    arguments, the number of photos that have
  *                                    been checked so far, and the total number
  *                                    of photos that have been found.
- * @param {number} chunkSize Number of photos to read in each iteration over the
- *                           array of photo paths, between calls to the
- *                           progressCallback function.
  * @param {function} callback Callback to be called after the geotags have
  *                            been read. This function will be called with a
  *                            single argument, an array of objects containing
@@ -54,17 +55,18 @@ export function getPhotoExif (photoPath: string) {
  *                                the photo was taken.
  *                              create_time: Unix epoch timestamp of when the
  *                                photo was taken.
+ * @param {boolean} abort
  */
-export function getPhotoGeotags (photoPaths: string[], progressCallback: (photosRead: number, totalPhotos: number) => void, chunkSize: number, callback: (photos: GeotaggedPhoto[]) => void) {
+export function getPhotoGeotags (photoPaths: string[], progressCallback: (photosRead: number, totalPhotos: number) => void, callback: (photos: GeotaggedPhoto[]) => void, abort: boolean) {
   let index = 0;
   const geotaggedPhotos: GeotaggedPhoto[] = [];
   /**
    * @param {string[]} photoPaths Absolute paths of photos to get the geotags of.
    */
   function work (photoPaths: string[]) {
-    let cnt = chunkSize;
-    // TODO: Reimplement a way to cancel the finder
-    while (cnt-- && index < photoPaths.length) {
+    let cnt = CHUNK_SIZE;
+
+    while (cnt-- && index < photoPaths.length && !abort) {
       if (progressCallback) {
         progressCallback(index + 1, photoPaths.length);
       }
@@ -86,6 +88,10 @@ export function getPhotoGeotags (photoPaths: string[], progressCallback: (photos
       }
 
       ++index;
+    }
+    if (abort) {
+      console.log('Aborting execution')
+      return
     }
     if (index < photoPaths.length) {
       setTimeout(function () { work(photoPaths) }, 1);
@@ -112,7 +118,7 @@ export function getPhotoGeotags (photoPaths: string[], progressCallback: (photos
  */
 export function getPhotoPaths (baseDirectory: string, fileExtensions: string[]): Promise<string[]> {
   const promise: Promise<string[]> = new Promise(function (resolve, reject) {
-    let directoryStat = Stats;
+    let directoryStat;
     try {
       directoryStat = lstatSync(baseDirectory)
     }
