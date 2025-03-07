@@ -9,10 +9,19 @@ html, body {
   padding: 0;
 }
 
-#action-bar {
+.action-bar {
     background-color: #999;
     border-bottom: 1px solid black;
     height: 35px;
+}
+
+.action-bar-button {
+    height: 100%;
+}
+
+.carousel-image {
+    width: 800px;
+    max-width: 800px;
 }
 
 .progress-bar {

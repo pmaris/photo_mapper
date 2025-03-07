@@ -17,10 +17,10 @@ export default function ActionBar({ map, config }: { map: google.maps.Map, confi
     }
 
     return (
-        <div>
-            <input type="image" src="icons/home.png" className="button" onClick={ () => { setShowMapStartModal(true) }} title="Save the current view of the map as the default when the application starts" />
-            <input type="image" src="icons/search.png" className="button" onClick={ () => { setShowFinder(true) } } title="Search your computer for geotagged photos" />
-            <input type="image" src="icons/calendar.png" className="button" id="date-filter-enable-button" onClick={ () => { setDateFiltersVisible(!dateFiltersVisible) } } title="Filter photos shown on the map by the date they were taken" />
+        <div className="action-bar">
+            <input type="image" src="icons/home.png" className="button action-bar-button" onClick={ () => { setShowMapStartModal(true) }} title="Save the current view of the map as the default when the application starts" />
+            <input type="image" src="icons/search.png" className="button action-bar-button" onClick={ () => { setShowFinder(true) } } title="Search your computer for geotagged photos" />
+            <input type="image" src="icons/calendar.png" className="button action-bar-button" id="date-filter-enable-button" onClick={ () => { setDateFiltersVisible(!dateFiltersVisible) } } title="Filter photos shown on the map by the date they were taken" />
             { dateFiltersVisible && (
                 <span id="date-filter">
                     Start date:
